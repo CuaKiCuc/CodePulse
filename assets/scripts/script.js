@@ -396,8 +396,24 @@ inputBox.addEventListener('input', () => {
         }
     }
 });
-function shot() { /* ... code âm thanh ... */ }
-function brake() { /* ... code âm thanh ... */ }
+function shot() {
+    var bgMusic = document.getElementById("shot");
+    if (bgMusic) {
+        bgMusic.currentTime = 0; // Đặt lại từ đầu mỗi khi gọi
+        bgMusic.play();
+        setTimeout(() => {
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }, 250);
+    }
+}
+function brake() {
+    var bgMusic = document.getElementById("brake");
+    if (bgMusic) {
+        bgMusic.currentTime = 0; // Đặt lại từ đầu mỗi khi gọi
+        bgMusic.play();
+    }
+}
 
 // --- Reset Combo, Handle Effects ---
 function resetCombo() {
@@ -474,7 +490,27 @@ function checkGameOver() {
     }
 }
 
-function flashScreen(bgColor) { /* ... code flash screen ... */ }
+function flashScreen(bgColor) {
+    const flashDiv = document.createElement('div');
+    flashDiv.style.position = 'absolute';
+    flashDiv.style.top = '0';
+    flashDiv.style.left = '0';
+    flashDiv.style.width = '100%';
+    flashDiv.style.height = '100%';
+    flashDiv.style.backgroundColor = bgColor;
+    flashDiv.style.opacity = '0.6'; // Độ mờ ban đầu
+    flashDiv.style.zIndex = '100'; // Đảm bảo nó nằm trên cùng
+    flashDiv.style.pointerEvents = 'none'; // Không chặn click
+    document.body.appendChild(flashDiv);
+
+    // Tạo hiệu ứng mờ dần
+    setTimeout(() => {
+        flashDiv.style.transition = 'opacity 0.3s ease-out';
+        flashDiv.style.opacity = '0';
+        // Xóa div sau khi hiệu ứng kết thúc
+        setTimeout(() => document.body.removeChild(flashDiv), 300); // Thời gian trùng với transition
+    }, 50); // Độ trễ nhỏ trước khi bắt đầu mờ dần
+}
 
 function handleGameOver() {
     if (gameState !== 'playing') return;
@@ -583,13 +619,49 @@ function loadHighScore() { try { const s = localStorage.getItem('typingAttackHig
 function savePlayerName() { try { localStorage.setItem('typingAttackPlayerName', playerName); } catch (e) { } }
 function loadPlayerName() { try { const s = localStorage.getItem('typingAttackPlayerName'); if (s) playerName = s; } catch (e) { playerName = "Player"; } playerNameInput.value = playerName; }
 function saveLaserColor() { try { localStorage.setItem('typingAttackLaserColor', selectedLaserColor); localStorage.setItem('typingAttackLaserColorName', selectedLaserColorName); } catch (e) { } }
-function loadLaserColor() { /* ... code tải màu laser ... */ currentLaserColorNameSpan.textContent = selectedLaserColorName; selectOption(laserColorButtons, selectedLaserColor, null); }
+function loadLaserColor() {
+    try {
+        const storedColor = localStorage.getItem('typingAttackLaserColor');
+        const storedName = localStorage.getItem('typingAttackLaserColorName');
+        if (storedColor && storedName) {
+            selectedLaserColor = storedColor;
+            selectedLaserColorName = storedName;
+        } else {
+            // Giá trị mặc định nếu chưa có trong storage
+            selectedLaserColor = '#00FF00';
+            selectedLaserColorName = 'Xanh lá';
+        }
+    } catch (e) {
+        console.error("Lỗi tải màu laser:", e);
+        // Giá trị mặc định nếu lỗi
+        selectedLaserColor = '#00FF00';
+        selectedLaserColorName = 'Xanh lá';
+    }
+    currentLaserColorNameSpan.textContent = selectedLaserColorName; // Cập nhật hiển thị tên màu
+    // Đánh dấu nút màu laser đã chọn trên menu
+    laserColorButtons.forEach(btn => {
+        if (btn.dataset.color === selectedLaserColor) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
+}
 function saveLanguage() { try { localStorage.setItem('typingAttackLanguage', selectedLanguage); } catch (e) { } }
 function loadLanguage() { try { const s = localStorage.getItem('typingAttackLanguage'); if (s && programmingWords[s]) selectedLanguage = s; else selectedLanguage = 'c'; } catch (e) { selectedLanguage = 'c'; } words = programmingWords[selectedLanguage]; currentLanguageSpan.textContent = selectedLanguage.toUpperCase(); selectOption(languageButtons, selectedLanguage, null); }
 
 // --- Menu Functions ---
 playerNameInput.addEventListener('change', () => { playerName = playerNameInput.value.trim() || "Player"; savePlayerName(); });
-laserColorButtons.forEach(button => { button.addEventListener('click', () => { /* ... code chọn màu laser ... */ saveLaserColor(); currentLaserColorNameSpan.textContent = selectedLaserColorName; selectOption(laserColorButtons, selectedLaserColor, null); }); });
+laserColorButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        selectedLaserColor = button.dataset.color; // Lấy màu từ data-color
+        selectedLaserColorName = button.dataset.name; // Lấy tên màu từ data-name
+        saveLaserColor(); // Lưu màu đã chọn
+        currentLaserColorNameSpan.textContent = selectedLaserColorName; // Cập nhật hiển thị
+        selectOption(laserColorButtons, selectedLaserColor, null); // Cập nhật trạng thái nút selected
+        console.log("Selected Laser Color:", selectedLaserColorName, selectedLaserColor);
+    });
+});
 languageButtons.forEach(button => { button.addEventListener('click', () => { selectedLanguage = button.dataset.language; words = programmingWords[selectedLanguage]; saveLanguage(); selectOption(languageButtons, selectedLanguage, (val) => { currentLanguageSpan.textContent = val.toUpperCase(); }); }); });
 
 
