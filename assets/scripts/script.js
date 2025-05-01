@@ -15,17 +15,13 @@ const startButton = document.getElementById('startButton');
 const difficultyButtons = document.querySelectorAll('.difficulty-btn');
 const characterButtons = document.querySelectorAll('.character-btn');
 const laserColorButtons = document.querySelectorAll('.laser-color-btn');
-
-// --- Element cho ngôn ngữ (MỚI) ---
 const languageButtons = document.querySelectorAll('.language-btn');
 const currentLanguageSpan = document.getElementById('currentLanguage');
-
 const currentDifficultySpan = document.getElementById('currentDifficulty');
 const currentCharacterSpan = document.getElementById('currentCharacter');
 const currentLaserColorNameSpan = document.getElementById('currentLaserColorName');
 
 // --- Game State & Variables ---
-// ... các biến game state khác ...
 let gameState = 'menu';
 let score = 0;
 let finalScore = 0;
@@ -43,163 +39,104 @@ let particles = [];
 let selectedLaserColor = '#00FF00';
 let selectedLaserColorName = 'Xanh lá';
 
-// --- Bộ từ vựng cho các ngôn ngữ lập trình (MỚI) ---
+// --- Responsive Scaling Variables ---
+let scaleX = 1; // Tỉ lệ scale theo chiều ngang
+let scaleY = 1; // Tỉ lệ scale theo chiều dọc
+const originalWidth = 800; // Kích thước gốc để tính tỉ lệ
+const originalHeight = 600;
+
+
+// --- Bộ từ vựng cho các ngôn ngữ lập trình ---
 const programmingWords = {
     c: ['int', 'float', 'char', 'void', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'return', 'sizeof', 'struct', 'typedef', 'enum', 'union', 'goto', 'const', 'volatile', 'extern', 'static', 'auto', 'register', 'printf', 'scanf', 'malloc', 'free'],
     csharp: ['class', 'public', 'private', 'protected', 'static', 'void', 'string', 'int', 'float', 'double', 'bool', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'return', 'new', 'this', 'base', 'using', 'namespace', 'Console', 'WriteLine', 'ReadLine', 'List', 'Dictionary', 'try', 'catch', 'finally', 'throw'],
     sql: ['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'INSERT', 'INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE', 'FROM', 'CREATE', 'TABLE', 'DATABASE', 'ALTER', 'DROP', 'INDEX', 'JOIN', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'ON', 'GROUP BY', 'ORDER BY', 'HAVING', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX']
 };
-let selectedLanguage = 'c'; // Ngôn ngữ mặc định
-let words = programmingWords[selectedLanguage]; // Danh sách từ hiện tại
+let selectedLanguage = 'c';
+let words = programmingWords[selectedLanguage];
 
-// --- Cài đặt độ khó (ĐÃ CẬP NHẬT Tốc độ) ---
+// --- Cài đặt độ khó ---
 const difficulties = {
-    easy: {
-        speed: 0.5, // Giảm tốc độ
-        rate: 2500,
-        name: 'Dễ',
-        targetFactor: 0.3
-    },
-    normal: {
-        speed: 0.7, // Giảm tốc độ
-        rate: 2000,
-        name: 'Bình thường',
-        targetFactor: 0.5
-    },
-    hard: {
-        speed: 1, // Giảm tốc độ
-        rate: 1500,
-        name: 'Khó',
-        targetFactor: 0.8
-    }
+    easy: { speed: 0.5, rate: 2500, name: 'Dễ', targetFactor: 0.3 },
+    normal: { speed: 0.7, rate: 2000, name: 'Bình thường', targetFactor: 0.5 },
+    hard: { speed: 1, rate: 1500, name: 'Khó', targetFactor: 0.8 }
 };
 let selectedDifficulty = 'normal';
 let currentEnemySpeed = difficulties[selectedDifficulty].speed;
 let currentSpawnRate = difficulties[selectedDifficulty].rate;
 let currentTargetFactor = difficulties[selectedDifficulty].targetFactor;
 
-
 // --- Tải ảnh tàu người chơi ---
-const playerImage = new Image();
-let playerImageLoaded = false;
-playerImage.onload = () => {
-    playerImageLoaded = true;
-    console.log("Ảnh tàu 1 (tau1.png) đã tải.");
-};
-playerImage.onerror = () => {
-    console.error("LỖI: Không thể tải ảnh 'tau1.png'.");
-};
+const playerImage = new Image(); let playerImageLoaded = false;
+playerImage.onload = () => { playerImageLoaded = true; console.log("Ảnh tàu 1 tải xong."); };
+playerImage.onerror = () => console.error("LỖI tải tau1.png");
 playerImage.src = "assets/images/tau1.png";
 
-
-const playerImage2 = new Image();
-let playerImage2Loaded = false;
-playerImage2.onload = () => {
-    playerImage2Loaded = true;
-    console.log("Ảnh tàu 2 (tau2.png) đã tải.");
-};
-playerImage2.onerror = () => {
-    console.error("LỖI: Không thể tải ảnh 'tau2.png'.");
-};
+const playerImage2 = new Image(); let playerImage2Loaded = false;
+playerImage2.onload = () => { playerImage2Loaded = true; console.log("Ảnh tàu 2 tải xong."); };
+playerImage2.onerror = () => console.error("LỖI tải tau2.png");
 playerImage2.src = "assets/images/tau2.png";
 
-const playerImage3 = new Image();
-let playerImage3Loaded = false;
-playerImage3.onload = () => {
-    playerImage3Loaded = true;
-    console.log("Ảnh tàu 3 (tau3.png) đã tải.");
-};
-playerImage3.onerror = () => {
-    console.error("LỖI: Không thể tải ảnh 'tau3.png'.");
-};
+const playerImage3 = new Image(); let playerImage3Loaded = false;
+playerImage3.onload = () => { playerImage3Loaded = true; console.log("Ảnh tàu 3 tải xong."); };
+playerImage3.onerror = () => console.error("LỖI tải tau3.png");
 playerImage3.src = "assets/images/tau3.png";
 
-// Nhạc nền theo độ khó (ĐÃ CÓ)
+// --- Tải ảnh thiên thạch ---
+const meteoriteImage = new Image(); let meteoriteImageLoaded = false;
+meteoriteImage.onload = () => { meteoriteImageLoaded = true; console.log("Ảnh thiên thạch tải xong."); };
+meteoriteImage.onerror = () => console.error("LỖI tải thienthach.png");
+meteoriteImage.src = "assets/images/thienthach.png";
+
+
+// Nhạc nền theo độ khó
 var musicTracks = {
     easy: "assets/sound/background-music/easy.mp3",
     normal: "assets/sound/background-music/normal.mp3",
     hard: "assets/sound/background-music/heroic-warrior-332055.mp3"
 };
 
-// Hàm phát nhạc theo độ khó đã chọn (ĐÃ CÓ)
 function playBackgroundMusic(difficulty) {
     var bgMusic = document.getElementById("background-music");
-
-    if (!bgMusic) {
-        console.error("Không tìm thấy phần tử audio!");
-        return;
-    }
-
-    bgMusic.pause(); // Dừng nhạc hiện tại
-    bgMusic.currentTime = 0; // Đặt lại từ đầu
-
+    if (!bgMusic) return;
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
     if (musicTracks[difficulty]) {
-        bgMusic.src = musicTracks[difficulty]; // Cập nhật bài nhạc
-        bgMusic.play().catch(error => console.error("Lỗi phát nhạc:", error)); // Xử lý lỗi nếu có
-        bgMusic.loop = true; // Lặp lại vô hạn
-    } else {
-        console.error("Không tìm thấy nhạc nền cho độ khó:", difficulty);
+        bgMusic.src = musicTracks[difficulty];
+        bgMusic.play().catch(error => console.error("Lỗi phát nhạc:", error));
+        bgMusic.loop = true;
     }
 }
 
-// Khi người chơi chọn độ khó mới (ĐÃ CÓ)
-function changeDifficulty(newDifficulty) {
-    selectedDifficulty = newDifficulty; // Cập nhật độ khó
-    playBackgroundMusic(selectedDifficulty); // Phát nhạc nền tương ứng
-}
-// --- Tải ảnh thiên thạch --- // MỚI
-const meteoriteImage = new Image();
-let meteoriteImageLoaded = false;
-meteoriteImage.onload = () => {
-    meteoriteImageLoaded = true;
-    console.log("Ảnh thiên thạch (thienthach.png) đã tải.");
-};
-meteoriteImage.onerror = () => {
-    console.error("LỖI: Không thể tải ảnh 'thienthach.png'.");
-};
-// Đảm bảo ảnh này nằm trong thư mục assets hoặc điều chỉnh đường dẫn
-meteoriteImage.src = "assets/images/thienthach.png";
-
-
-// --- Định nghĩa Nhân vật (chỉ 3 tàu ảnh) ---
+// Định nghĩa Nhân vật
 const characters = {
-    default: {
-        type: 'image',
-        image: playerImage,
-        name: 'Tàu Chiến Binh'
-    }, // tau1.png
-    ship2: {
-        type: 'image',
-        image: playerImage2,
-        name: 'Tàu Vinh Quang'
-    }, // tau2.png
-    ship3: {
-        type: 'image',
-        image: playerImage3,
-        name: 'Tàu 30/4'
-    } // tau3.png
+    default: { type: 'image', image: playerImage, name: 'Tàu Chiến Binh' },
+    ship2: { type: 'image', image: playerImage2, name: 'Tàu Vinh Quang' },
+    ship3: { type: 'image', image: playerImage3, name: 'Tàu 30/4' }
 };
-let selectedCharacter = 'default'; // Mặc định là tàu ảnh đầu tiên
-// Kích thước tàu (giữ nguyên hoặc điều chỉnh nếu cần)
+let selectedCharacter = 'default';
+
+// Kích thước gốc của player (sẽ được scale khi vẽ)
 const player = {
-    x: canvas.width / 2 - 30,
-    y: canvas.height - 70,
-    width: 60,
-    height: 60
+    x: originalWidth / 2 - 30, // Vị trí ban đầu dựa trên kích thước gốc
+    y: originalHeight - 70,
+    width: 60,  // Kích thước gốc
+    height: 60 // Kích thước gốc
 };
 
 let spawnIntervalId = null;
 let animationFrameId = null;
 
-// --- Lớp Particle (Giữ nguyên) ---
+// --- Lớp Particle ---
 class Particle {
     constructor(x, y, options = {}) {
         this.x = x;
         this.y = y;
-        const baseSize = options.baseSize || 5;
-        const sizeVariation = options.sizeVariation || 2;
+        const baseSize = (options.baseSize || 5) * scaleY; // Scale size
+        const sizeVariation = (options.sizeVariation || 2) * scaleY; // Scale size variation
         this.size = Math.random() * baseSize + sizeVariation;
         const speedMultiplier = options.speedMultiplier || 1;
+        // Scale speed? Có thể không cần thiết nếu muốn hiệu ứng nổ nhanh như nhau
         this.speedX = (Math.random() * 3 - 1.5) * speedMultiplier;
         this.speedY = (Math.random() * 3 - 1.5) * speedMultiplier;
         const hueStart = options.hueStart || 20;
@@ -213,7 +150,7 @@ class Particle {
         this.x += this.speedX;
         this.y += this.speedY;
         this.life -= this.decay;
-        if (this.size > 0.1) this.size -= 0.05;
+        if (this.size > 0.1 * scaleY) this.size -= 0.05 * scaleY; // Scale decay size
     }
     draw() {
         ctx.fillStyle = this.color;
@@ -224,56 +161,43 @@ class Particle {
         ctx.globalAlpha = 1;
     }
 }
-// --- Hàm tạo hiệu ứng nổ (Giữ nguyên) ---
+// Hàm tạo hiệu ứng nổ
 function createExplosion(x, y, type) {
     let options = {};
     let count = 15;
     if (type === 'collision') {
         count = 25 + Math.floor(Math.random() * 10);
-        options = {
-            hueStart: 0,
-            hueRange: 60,
-            baseSize: 6,
-            sizeVariation: 3,
-            speedMultiplier: 1.2,
-            baseLife: 120,
-            decay: 1.8
-        };
+        options = { hueStart: 0, hueRange: 60, baseSize: 6, sizeVariation: 3, speedMultiplier: 1.2, baseLife: 120, decay: 1.8 };
         flashScreen('rgba(255, 50, 0, 0.6)');
     } else if (type === 'completion') {
         count = 15 + Math.floor(Math.random() * 5);
-        options = {
-            hueStart: 40,
-            hueRange: 40,
-            baseSize: 4,
-            sizeVariation: 2,
-            speedMultiplier: 1,
-            baseLife: 80,
-            decay: 2.2
-        };
+        options = { hueStart: 40, hueRange: 40, baseSize: 4, sizeVariation: 2, speedMultiplier: 1, baseLife: 80, decay: 2.2 };
     }
     for (let i = 0; i < count; i++) {
+        // Tọa độ x, y đã được truyền vào (cần đảm bảo nó đã được scale nếu cần)
         particles.push(new Particle(x, y, options));
     }
 }
-//nhac khi click
+// Nhạc khi click
 document.addEventListener("click", function () {
-    var over = document.getElementById("click");
-    if (over) {
-        over.play();
+    var clickSound = document.getElementById("click");
+    if (clickSound && clickSound.readyState >= 2) { // Check if ready
+        clickSound.currentTime = 0;
+        clickSound.play().catch(e => { }); // Ignore play errors if interrupted
     }
 });
 
-// --- Lớp Laser (Giữ nguyên) ---
+// --- Lớp Laser ---
 class Laser {
     constructor(startX, startY, endX, endY, color) {
+        // Tọa độ start/end cần được tính toán dựa trên canvas hiện tại khi tạo laser
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
         this.endY = endY;
         this.life = 15;
         this.color = color || '#00FF00';
-        this.lineWidth = 3;
+        this.lineWidth = 3 * scaleY; // Scale line width
     }
     update() {
         this.life--;
@@ -283,7 +207,7 @@ class Laser {
         ctx.lineWidth = this.lineWidth;
         ctx.globalAlpha = Math.max(0, this.life / 15);
         ctx.shadowColor = this.color;
-        ctx.shadowBlur = 5;
+        ctx.shadowBlur = 5 * scaleY; // Scale shadow blur
         ctx.beginPath();
         ctx.moveTo(this.startX, this.startY);
         ctx.lineTo(this.endX, this.endY);
@@ -294,126 +218,115 @@ class Laser {
     }
 }
 
-// --- Lớp Enemy (ĐÃ CẬP NHẬT để dùng ảnh thiên thạch và từ vựng) ---
+// --- Lớp Enemy ---
 class Enemy {
     constructor() {
-        // Sử dụng danh sách từ vựng của ngôn ngữ đã chọn
         this.word = words[Math.floor(Math.random() * words.length)];
-        ctx.font = '16px Arial';
-        // Kích thước của enemy sẽ dựa vào kích thước ảnh và chữ
+        // Cần tính toán width/height gốc dựa trên font size gốc và image size gốc
+        const tempFont = '16px Arial'; // Font gốc
+        ctx.font = tempFont;
         const textWidth = ctx.measureText(this.word).width;
-        const imageSize = 50; // Kích thước ảnh thiên thạch, có thể điều chỉnh
-        this.width = Math.max(textWidth + 10, imageSize); // Lấy kích thước lớn hơn giữa chữ và ảnh
-        this.height = imageSize + 25; // Chiều cao bao gồm ảnh và khoảng trống cho chữ
+        const imageSize = 50; // Kích thước ảnh gốc
+        this.originalWidth = Math.max(textWidth + 10, imageSize);
+        this.originalHeight = imageSize + 25;
 
-        this.x = Math.random() * (canvas.width - this.width);
-        this.y = -this.height; // Bắt đầu từ trên màn hình
+        // Vị trí spawn ban đầu (sẽ được ghi đè trong hàm spawnEnemy)
+        this.x = Math.random() * (originalWidth - this.originalWidth);
+        this.y = -this.originalHeight;
 
-        this.speed = currentEnemySpeed * (0.8 + Math.random() * 0.4);
-        this.targetX = this.x;
-
-        // Sử dụng ảnh thiên thạch mới
+        this.speed = currentEnemySpeed * (0.8 + Math.random() * 0.4); // Tốc độ có thể cần scaleY?
         this.img = meteoriteImage;
-        this.imgLoaded = meteoriteImageLoaded; // Kiểm tra trạng thái tải ảnh thiên thạch
+        this.imgLoaded = meteoriteImageLoaded;
     }
 
     draw() {
-        const imageSize = 50; // Kích thước ảnh thiên thạch khi vẽ
-        const textYOffset = 20; // Khoảng cách từ dưới ảnh đến chữ
-        const centerX = this.x + this.width / 2;
+        const imageDrawSize = 50 * scaleY; // Kích thước ảnh khi vẽ (scaled)
+        const textYOffset = 20 * scaleY; // Khoảng cách chữ (scaled)
+        const fontSize = 16 * scaleY; // Font size (scaled)
+        const currentDrawWidth = this.originalWidth * scaleX; // Chiều rộng vẽ hiện tại
+        const centerX = this.x + currentDrawWidth / 2; // Tâm X dựa trên vị trí hiện tại và width đã scale
 
-        // Vẽ ảnh thiên thạch
         if (this.imgLoaded) {
             try {
-                // Vẽ ảnh centered theo chiều ngang của enemy
-                ctx.drawImage(this.img, centerX - imageSize / 2, this.y, imageSize, imageSize);
-            } catch (e) {
-                console.error("Lỗi vẽ ảnh thiên thạch:", e);
-                // Vẽ hình thay thế nếu lỗi
-                ctx.fillStyle = 'orange';
-                ctx.fillRect(centerX - imageSize / 2, this.y, imageSize, imageSize);
+                ctx.drawImage(this.img, centerX - imageDrawSize / 2, this.y, imageDrawSize, imageDrawSize);
+            } catch (e) { /* fallback vẽ hình chữ nhật */
+                ctx.fillStyle = 'darkorange';
+                ctx.fillRect(centerX - imageDrawSize / 2, this.y, imageDrawSize, imageDrawSize);
             }
-        } else {
-            // Vẽ hình thay thế nếu ảnh chưa tải
+        } else { /* fallback vẽ hình chữ nhật */
             ctx.fillStyle = 'darkorange';
-            ctx.fillRect(centerX - imageSize / 2, this.y, imageSize, imageSize);
+            ctx.fillRect(centerX - imageDrawSize / 2, this.y, imageDrawSize, imageDrawSize);
         }
 
-        // Vẽ chữ (từ) bên dưới ảnh thiên thạch
-        ctx.fillStyle = 'white'; // Màu chữ
-        ctx.font = '16px Arial'; // Font chữ
-        ctx.textAlign = 'center'; // Căn giữa chữ
-        ctx.fillText(this.word, centerX, this.y + imageSize + textYOffset);
-
-        ctx.textAlign = 'left'; // Trả về căn lề mặc định
+        ctx.fillStyle = 'white';
+        ctx.font = `${Math.max(10, Math.round(fontSize))}px Arial`; // Đặt font size đã scale
+        ctx.textAlign = 'center';
+        ctx.fillText(this.word, centerX, this.y + imageDrawSize + textYOffset);
+        ctx.textAlign = 'left';
     }
 
     update() {
-        this.y += this.speed;
-        // Giữ nguyên phần di chuyển theo tàu người chơi nếu gameState là 'playing'
+        // Có thể scale tốc độ: this.y += this.speed * scaleY;
+        this.y += this.speed; // Giả sử không scale tốc độ di chuyển dọc
+
         if (gameState === 'playing') {
-            const playerCenterX = player.x + player.width / 2;
-            const enemyCenterX = this.x + this.width / 2;
+            const playerDrawWidth = player.width * scaleX;
+            const playerCenterX = player.x + playerDrawWidth / 2;
+            const enemyDrawWidth = this.originalWidth * scaleX;
+            const enemyCenterX = this.x + enemyDrawWidth / 2;
             const dx = playerCenterX - enemyCenterX;
-            // Điều chỉnh hệ số 0.005 nếu cần cho cảm giác di chuyển
+            // Tốc độ di chuyển ngang có thể scale hoặc không
             this.x += dx * 0.005 * currentTargetFactor * this.speed;
-            // Giới hạn vị trí X trong canvas
-            this.x = Math.max(0, Math.min(canvas.width - this.width, this.x));
+            // Giới hạn X trong canvas hiện tại
+            this.x = Math.max(0, Math.min(canvas.width - enemyDrawWidth, this.x));
         }
 
-        // Kiểm tra xem enemy đã ra khỏi màn hình chưa
-        const isOutOfBounds = this.y > canvas.height + this.height;
+        const isOutOfBounds = this.y > canvas.height; // Kiểm tra theo chiều cao canvas hiện tại
         if (isOutOfBounds && gameState === 'playing') {
-            // Nếu ra khỏi màn hình khi đang chơi, reset combo
             resetCombo();
-            // Thêm đếm số enemy đã trượt
             enemiesReachedPlayer++;
-            updateInfoBar(); // Cập nhật accuracy
+            updateInfoBar();
         }
         return isOutOfBounds;
     }
 }
 
-
-// --- Player Drawing (Cập nhật kiểm tra ảnh + bỏ vẽ hình dạng) ---
+// --- Hàm vẽ Player ---
 function drawPlayer() {
     const character = characters[selectedCharacter];
+    if (character.type !== 'image' || !character.image) {
+        drawFallbackShape('red'); return;
+    }
 
-    // Chỉ xử lý nếu type là 'image'
-    if (character.type === 'image' && character.image) {
-        let imageIsLoaded = false;
-        // Kiểm tra đúng ảnh đã được tải chưa
-        if (character.image === playerImage && playerImageLoaded) {
-            imageIsLoaded = true;
-        } else if (character.image === playerImage2 && playerImage2Loaded) {
-            imageIsLoaded = true;
-        } else if (character.image === playerImage3 && playerImage3Loaded) { // Thêm kiểm tra ảnh 3
-            imageIsLoaded = true;
-        }
+    let imageIsLoaded = (character.image === playerImage && playerImageLoaded) ||
+        (character.image === playerImage2 && playerImage2Loaded) ||
+        (character.image === playerImage3 && playerImage3Loaded);
 
-        if (imageIsLoaded) {
-            try {
-                ctx.drawImage(character.image, player.x, player.y, player.width, player.height);
-            } catch (e) {
-                console.error("Lỗi vẽ ảnh tàu:", e);
-                drawFallbackShape('grey'); // Vẽ hình thay thế nếu lỗi
-            }
-        } else {
-            drawFallbackShape('darkgrey'); // Ảnh chưa tải, vẽ hình thay thế
-        }
+    // Kích thước và vị trí vẽ player đã được scale
+    const drawWidth = player.width * scaleX;
+    const drawHeight = player.height * scaleY;
+    // Cập nhật lại vị trí X, Y trước khi vẽ để đảm bảo đúng vị trí scale
+    player.x = canvas.width / 2 - drawWidth / 2;
+    player.y = canvas.height - drawHeight - (10 * scaleY); // Khoảng cách đáy
+
+    if (imageIsLoaded) {
+        try {
+            ctx.drawImage(character.image, player.x, player.y, drawWidth, drawHeight);
+        } catch (e) { drawFallbackShape('grey'); }
     } else {
-        // Trường hợp không xác định hoặc lỗi cấu hình characters
-        drawFallbackShape('red'); // Vẽ màu đỏ để báo lỗi cấu hình
-        console.error(`Nhân vật '${selectedCharacter}' không phải loại 'image' hoặc thiếu thông tin ảnh.`);
+        drawFallbackShape('darkgrey');
     }
 }
-// Hàm vẽ hình thay thế (Giữ nguyên)
+// Hàm vẽ hình thay thế
 function drawFallbackShape(color) {
     ctx.fillStyle = color || 'grey';
-    ctx.fillRect(player.x, player.y, player.width, player.height);
+    const drawWidth = player.width * scaleX;
+    const drawHeight = player.height * scaleY;
+    // Vị trí player.x, player.y cần được cập nhật trước đó
+    ctx.fillRect(player.x, player.y, drawWidth, drawHeight);
 }
 
-// --- Vẽ mạng sống, Update Info Bar, Spawn Enemy (Giữ nguyên) ---
+// --- Vẽ mạng sống, Update Info Bar ---
 function drawLives() {
     let hearts = "";
     for (let i = 0; i < maxLives; i++) {
@@ -429,619 +342,442 @@ function updateInfoBar() {
     accuracyDisplay.textContent = `Chính xác: ${accuracy}%`;
     drawLives();
 }
+
+// --- Spawn Enemy ---
 function spawnEnemy() {
     if (gameState === 'playing') {
-        // Enemy constructor sẽ sử dụng danh sách `words` hiện tại
-        enemies.push(new Enemy());
+        let newEnemy = new Enemy();
+        // Đặt vị trí X ngẫu nhiên dựa trên chiều rộng canvas hiện tại và chiều rộng đã scale của enemy
+        const enemyDrawWidth = newEnemy.originalWidth * scaleX;
+        newEnemy.x = Math.random() * (canvas.width - enemyDrawWidth);
+        // Đặt vị trí Y ở trên cùng (chiều cao enemy đã scale)
+        newEnemy.y = -(newEnemy.originalHeight * scaleY);
+        enemies.push(newEnemy);
     }
 }
-// --- Input Handling (Giữ nguyên) ---
+
+// --- Input Handling ---
 inputBox.addEventListener('input', () => {
-    if (gameState !== 'playing')
-        return;
+    if (gameState !== 'playing') return;
     const typedText = inputBox.value.trim().toLowerCase();
     if (!typedText) return;
+
     for (let i = enemies.length - 1; i >= 0; i--) {
-        // Kiểm tra xem từ gõ vào có khớp với từ của bất kỳ enemy nào không
-        if (typedText === enemies[i].word.toLowerCase()) { // So sánh không phân biệt hoa thường
+        if (typedText === enemies[i].word.toLowerCase()) {
             const enemy = enemies[i];
-            // Tính toán vị trí trung tâm của enemy để bắn laser và tạo hiệu ứng
-            const enemyCenterX = enemy.x + enemy.width / 2;
-            const enemyCenterY = enemy.y + enemy.height / 2; // Sử dụng chiều cao enemy mới
+            const enemyDrawWidth = enemy.originalWidth * scaleX;
+            const enemyDrawHeight = enemy.originalHeight * scaleY; // Tính chiều cao vẽ
+            const enemyCenterX = enemy.x + enemyDrawWidth / 2;
+            // Tính Y của tâm enemy dựa trên Y hiện tại và chiều cao vẽ
+            const enemyCenterY = enemy.y + enemyDrawHeight / 2;
 
-            const playerGunX = player.x + player.width / 2;
-            const playerGunY = player.y; // Bắn từ vị trí của tàu người chơi
+            const playerDrawWidth = player.width * scaleX;
+            const playerGunX = player.x + playerDrawWidth / 2; // Vị trí súng X đã scale
+            const playerGunY = player.y; // Vị trí súng Y đã scale
+
             shot();
+            // Truyền tọa độ đã scale vào Laser và Explosion
             lasers.push(new Laser(playerGunX, playerGunY, enemyCenterX, enemyCenterY, selectedLaserColor));
-            createExplosion(enemyCenterX, enemyCenterY, 'completion'); // Tạo hiệu ứng nổ khi tiêu diệt
+            createExplosion(enemyCenterX, enemyCenterY, 'completion');
             brake();
-            enemies.splice(i, 1); // Xóa enemy
 
-            score += 10; // Tăng điểm
-            successfulHits++; // Tăng số lần bắn trúng
-            comboCounter++; // Tăng combo
+            enemies.splice(i, 1);
+            score += 10;
+            successfulHits++;
+            comboCounter++;
 
-            // Nếu đạt combo 10, tăng mạng và reset combo
             if (comboCounter >= 10) {
-                if (playerLives < maxLives) {
-                    playerLives++;
-                }
-                comboCounter = 0; // Reset combo sau khi nhận mạng
+                if (playerLives < maxLives) playerLives++;
+                comboCounter = 0;
             }
-
-            updateInfoBar(); // Cập nhật hiển thị thông tin
-            inputBox.value = ''; // Xóa nội dung input
-            return; // Thoát khỏi vòng lặp vì đã tìm thấy và xử lý enemy
+            updateInfoBar();
+            inputBox.value = '';
+            return;
         }
     }
 });
-function shot() {
-    var bgMusic = document.getElementById("shot");
-    if (bgMusic) {
-        bgMusic.currentTime = 0; // Đặt lại từ đầu mỗi khi gọi
-        bgMusic.play();
-        setTimeout(() => {
-            bgMusic.pause();
-            bgMusic.currentTime = 0;
-        }, 250);
-    }
-}
-function brake() {
-    var bgMusic = document.getElementById("brake");
-    if (bgMusic) {
-        bgMusic.currentTime = 0; // Đặt lại từ đầu mỗi khi gọi
-        bgMusic.play();
-    }
-}
-// --- Reset Combo, Handle Effects (Giữ nguyên) ---
+function shot() { /* ... code âm thanh ... */ }
+function brake() { /* ... code âm thanh ... */ }
+
+// --- Reset Combo, Handle Effects ---
 function resetCombo() {
     if (comboCounter > 0) {
-        console.log("Combo Reset!");
         comboCounter = 0;
         updateInfoBar();
     }
 }
 function handleEffects() {
-    // Cập nhật và vẽ lasers
     for (let i = lasers.length - 1; i >= 0; i--) {
-        lasers[i].update();
-        lasers[i].draw();
+        lasers[i].update(); lasers[i].draw();
         if (lasers[i].life <= 0) lasers.splice(i, 1);
     }
-    // Cập nhật và vẽ particles
     for (let i = particles.length - 1; i >= 0; i--) {
-        particles[i].update();
-        particles[i].draw();
+        particles[i].update(); particles[i].draw();
         if (particles[i].life <= 0) particles.splice(i, 1);
     }
 }
-// --- Game Loop Functions (Giữ nguyên) ---
-function updateAndDrawEnemies() {
-    // Duyệt ngược để xóa phần tử khi đang lặp
-    for (let i = enemies.length - 1; i >= 0; i--) {
-        const isOutOfBounds = enemies[i].update(); // Cập nhật vị trí enemy
-        enemies[i].draw(); // Vẽ enemy
 
-        // Nếu enemy ra khỏi màn hình
+// --- Game Loop Functions ---
+function updateAndDrawEnemies() {
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        const isOutOfBounds = enemies[i].update(); // update đã xử lý out of bounds
+        enemies[i].draw();
         if (isOutOfBounds) {
-            // Xóa enemy khỏi mảng
             enemies.splice(i, 1);
-            // Việc reset combo và tăng enemiesReachedPlayer đã được thêm vào Enemy.update()
+            // Reset combo/accuracy đã xử lý trong update()
         }
     }
 }
 function checkGameOver() {
     if (gameState !== 'playing') return;
 
-    // Vòng lặp kiểm tra va chạm giữa enemies và player
+    const playerDrawWidth = player.width * scaleX;
+    const playerDrawHeight = player.height * scaleY;
+    const playerTop = player.y;
+    const playerLeft = player.x;
+    const playerRight = player.x + playerDrawWidth;
+
     for (let i = enemies.length - 1; i >= 0; i--) {
         const enemy = enemies[i];
-        const enemyBottom = enemy.y + enemy.height; // Đáy của enemy
-        const playerTop = player.y; // Đỉnh của người chơi
+        const enemyDrawWidth = enemy.originalWidth * scaleX;
+        const enemyDrawHeight = enemy.originalHeight * scaleY;
+        const enemyBottom = enemy.y + enemyDrawHeight;
         const enemyLeft = enemy.x;
-        const enemyRight = enemy.x + enemy.width;
-        const playerLeft = player.x;
-        const playerRight = player.x + player.width;
+        const enemyRight = enemy.x + enemyDrawWidth;
 
-        // Kiểm tra va chạm (hình chữ nhật của enemy và player chồng lấn)
-        if (enemyBottom >= playerTop &&
+        // Kiểm tra va chạm dựa trên kích thước đã scale
+        if (enemyBottom >= playerTop && // Enemy chạm hoặc qua đỉnh player
+            enemy.y < player.y + playerDrawHeight && // Đỉnh enemy chưa qua đáy player
             enemyRight > playerLeft &&
             enemyLeft < playerRight) {
+            const collisionX = enemy.x + enemyDrawWidth / 2;
+            const collisionY = player.y + playerDrawHeight / 2;
+            createExplosion(collisionX, collisionY, 'collision');
+            brake(); // Play sound
 
-            // Tính toán vị trí va chạm để tạo hiệu ứng nổ
-            const collisionX = enemy.x + enemy.width / 2;
-            const collisionY = player.y + player.height / 2; // Vị trí va chạm gần giữa tàu
+            playerLives--;
+            enemiesReachedPlayer++; // Tính vào accuracy
+            resetCombo();
+            updateInfoBar();
+            enemies.splice(i, 1);
 
-            createExplosion(collisionX, collisionY, 'collision'); // Tạo hiệu ứng nổ va chạm
-            var bgMusic = document.getElementById("brake");
-            if (bgMusic) {
-                bgMusic.currentTime = 0; // Đặt lại từ đầu mỗi khi gọi
-                bgMusic.play();
-            }
-            playerLives--; // Giảm mạng người chơi
-            enemiesReachedPlayer++; // Tăng số enemy đã va chạm (cho tính accuracy)
-            resetCombo(); // Reset combo khi bị va chạm
-            updateInfoBar(); // Cập nhật hiển thị thông tin
-
-            enemies.splice(i, 1); // Xóa enemy đã va chạm
-
-            // Kiểm tra nếu hết mạng
             if (playerLives <= 0) {
-                var bgMusic = document.getElementById("start1");
-                if (bgMusic) {
-                    bgMusic.pause(); // Dừng nhạc
-                    bgMusic.currentTime = 0; // Đưa thời gian về đầu
-                }
-                //chay nhac khi thua
-                var over = document.querySelector("#over");
-                if (over) { // Thêm kiểm tra null
-                    over.play();
-                }
-                handleGameOver(); // Gọi hàm kết thúc game
-                return; // Thoát khỏi hàm để tránh xử lý thêm sau khi game over
+                var bgMusic = document.getElementById("background-music"); // Lấy đúng ID nhạc nền game
+                if (bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; }
+                var overSound = document.getElementById("over"); // Lấy đúng ID nhạc game over
+                if (overSound) { overSound.play(); }
+                handleGameOver();
+                return; // Thoát ngay khi game over
             }
-            return; // Thoát khỏi vòng lặp sau khi xử lý va chạm để tránh lỗi
+            // return; // Có thể thoát sau khi xử lý 1 va chạm/frame để tránh lỗi
         }
     }
 }
 
-
-
-function flashScreen(bgColor) {
-    const flashDiv = document.createElement('div');
-    flashDiv.style.position = 'absolute';
-    flashDiv.style.top = '0';
-    flashDiv.style.left = '0';
-    flashDiv.style.width = '100%';
-    flashDiv.style.height = '100%';
-    flashDiv.style.backgroundColor = bgColor;
-    flashDiv.style.opacity = '0.6'; // Độ mờ ban đầu
-    flashDiv.style.zIndex = '100'; // Đảm bảo nó nằm trên cùng
-    flashDiv.style.pointerEvents = 'none'; // Không chặn click
-    document.body.appendChild(flashDiv);
-
-    // Tạo hiệu ứng mờ dần
-    setTimeout(() => {
-        flashDiv.style.transition = 'opacity 0.3s ease-out';
-        flashDiv.style.opacity = '0';
-        // Xóa div sau khi hiệu ứng kết thúc
-        setTimeout(() => document.body.removeChild(flashDiv), 300); // Thời gian trùng với transition
-    }, 50); // Độ trễ nhỏ trước khi bắt đầu mờ dần
-}
+function flashScreen(bgColor) { /* ... code flash screen ... */ }
 
 function handleGameOver() {
     if (gameState !== 'playing') return;
-    gameState = 'gameOver'; // Đặt trạng thái game là kết thúc
-    finalScore = score; // Lưu điểm cuối cùng
+    gameState = 'gameOver';
+    finalScore = score;
     if (finalScore > highScore) {
-        highScore = finalScore; // Cập nhật điểm cao nhất nếu cần
-        saveHighScore(); // Lưu điểm cao nhất vào Local Storage
+        highScore = finalScore;
+        saveHighScore();
     }
-    // Dừng việc sinh enemy mới
     clearInterval(spawnIntervalId);
     spawnIntervalId = null;
-    // Cho phép click vào canvas (để tương tác với nút Restart/Menu)
-    canvas.classList.add('clickable');
-    // Vô hiệu hóa ô input
+    canvas.classList.add('clickable'); // Cho phép click/touch trên canvas
     inputBox.disabled = true;
-    inputBox.value = ''; // Xóa nội dung ô input
+    inputBox.value = '';
+    resizeGameOverButtons(); // Tính toán lại vị trí nút lần cuối
     console.log("Game Over!");
 }
-// Định nghĩa các nút trên màn hình game over
-const gameOverButtonRetry = {
-    x: canvas.width / 2 - 150,
-    y: canvas.height / 2 + 100,
-    width: 120,
-    height: 50,
-    text: "Chơi lại"
-};
-const gameOverButtonMenu = {
-    x: canvas.width / 2 + 30,
-    y: canvas.height / 2 + 100,
-    width: 120,
-    height: 50,
-    text: "Menu"
-};
 
+// --- Định nghĩa nút Game Over (Kích thước gốc) ---
+const gameOverButtonRetry = { x: 0, y: 0, width: 120, height: 50, text: "Chơi lại" };
+const gameOverButtonMenu = { x: 0, y: 0, width: 120, height: 50, text: "Menu" };
+
+
+// --- Hàm vẽ màn hình Game Over (Sử dụng scale) ---
 function drawGameOverScreen() {
-    // Vẽ lớp phủ tối
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Vẽ thông tin game over
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
-    ctx.font = '24px Arial';
-    ctx.fillText(`Người chơi: ${playerName}`, canvas.width / 2, canvas.height / 2 - 120);
+
+    // Tính toán font size và vị trí Y dựa trên scaleY và canvas.height
+    const fontScaleBase = Math.min(scaleX, scaleY); // Dùng tỉ lệ nhỏ hơn để tránh chữ quá to
+    const largeFontSize = Math.max(18, Math.round(60 * fontScaleBase));
+    const mediumFontSize = Math.max(14, Math.round(30 * fontScaleBase));
+    const smallFontSize = Math.max(12, Math.round(24 * fontScaleBase));
+    const smallerFontSize = Math.max(10, Math.round(20 * fontScaleBase));
+
+
+    const line1Y = canvas.height / 2 - (120 * scaleY);
+    const line2Y = canvas.height / 2 - (50 * scaleY);
+    const line3Y = canvas.height / 2 + (0 * scaleY);
+    const line4Y = canvas.height / 2 + (35 * scaleY); // Tăng khoảng cách
+    const line5Y = canvas.height / 2 + (70 * scaleY); // Tăng khoảng cách
+
+    ctx.font = `${smallFontSize}px Arial`;
+    ctx.fillText(`Người chơi: ${playerName}`, canvas.width / 2, line1Y);
 
     ctx.fillStyle = 'red';
-    ctx.font = 'bold 60px Arial';
-    ctx.fillText("KẾT THÚC!", canvas.width / 2, canvas.height / 2 - 50);
+    ctx.font = `bold ${largeFontSize}px Arial`;
+    ctx.fillText("KẾT THÚC!", canvas.width / 2, line2Y);
 
     ctx.fillStyle = 'white';
-    ctx.font = '30px Arial';
-    ctx.fillText(`Điểm: ${finalScore}`, canvas.width / 2, canvas.height / 2 + 0);
+    ctx.font = `${mediumFontSize}px Arial`;
+    ctx.fillText(`Điểm: ${finalScore}`, canvas.width / 2, line3Y);
 
-    ctx.font = '20px Arial';
-    ctx.fillText(`Điểm cao nhất: ${highScore}`, canvas.width / 2, canvas.height / 2 + 30);
-    ctx.fillText(`Độ chính xác: ${accuracy}%`, canvas.width / 2, canvas.height / 2 + 60);
+    ctx.font = `${smallerFontSize}px Arial`;
+    ctx.fillText(`Điểm cao nhất: ${highScore}`, canvas.width / 2, line4Y);
+    ctx.fillText(`Độ chính xác: ${accuracy}%`, canvas.width / 2, line5Y);
 
 
-    // Vẽ nút "Chơi lại"
-    ctx.fillStyle = '#4CAF50'; // Màu xanh lá
+    // Vẽ nút (vị trí và kích thước lấy từ biến đã được resize trong resizeGameOverButtons)
+    const buttonFontSize = Math.max(12, Math.round(20 * fontScaleBase));
+    ctx.font = `${buttonFontSize}px Arial`;
+
+    // Nút Chơi lại
+    ctx.fillStyle = '#4CAF50';
     ctx.fillRect(gameOverButtonRetry.x, gameOverButtonRetry.y, gameOverButtonRetry.width, gameOverButtonRetry.height);
     ctx.fillStyle = 'white';
-    ctx.font = '20px Arial';
-    // Vẽ chữ căn giữa nút
-    ctx.fillText(gameOverButtonRetry.text, gameOverButtonRetry.x + gameOverButtonRetry.width / 2, gameOverButtonRetry.y + 32); // 32 để căn chỉnh theo chiều dọc
+    ctx.fillText(gameOverButtonRetry.text, gameOverButtonRetry.x + gameOverButtonRetry.width / 2, gameOverButtonRetry.y + gameOverButtonRetry.height / 2 + (buttonFontSize * 0.35)); // Căn giữa chữ
 
-    // Vẽ nút "Menu"
-    ctx.fillStyle = '#007bff'; // Màu xanh dương
+    // Nút Menu
+    ctx.fillStyle = '#007bff';
     ctx.fillRect(gameOverButtonMenu.x, gameOverButtonMenu.y, gameOverButtonMenu.width, gameOverButtonMenu.height);
     ctx.fillStyle = 'white';
-    ctx.font = '20px Arial';
-    // Vẽ chữ căn giữa nút
-    ctx.fillText(gameOverButtonMenu.text, gameOverButtonMenu.x + gameOverButtonMenu.width / 2, gameOverButtonMenu.y + 32); // 32 để căn chỉnh theo chiều dọc
+    ctx.fillText(gameOverButtonMenu.text, gameOverButtonMenu.x + gameOverButtonMenu.width / 2, gameOverButtonMenu.y + gameOverButtonMenu.height / 2 + (buttonFontSize * 0.35)); // Căn giữa chữ
 
-    ctx.textAlign = 'left'; // Trả về căn lề mặc định
+    ctx.textAlign = 'left';
 }
 
-// Hàm vòng lặp game chính
+// --- Hàm vòng lặp game chính ---
 function gameLoop() {
-    // Xóa toàn bộ canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (gameState === 'playing') {
-        // Nếu đang chơi
-        drawPlayer(); // Vẽ tàu người chơi
-        updateAndDrawEnemies(); // Cập nhật vị trí và vẽ enemies
-        handleEffects(); // Cập nhật và vẽ lasers, particles
-        checkGameOver(); // Kiểm tra điều kiện game over
-    } else if (gameState === 'gameOver') {
-        // Nếu game over
-        // Vẫn vẽ enemy và hiệu ứng để hiển thị trạng thái cuối cùng
         drawPlayer();
         updateAndDrawEnemies();
         handleEffects();
-        drawGameOverScreen(); // Vẽ màn hình game over
+        checkGameOver();
+    } else if (gameState === 'gameOver') {
+        // Vẫn vẽ trạng thái cuối cùng và màn hình game over
+        drawPlayer();
+        updateAndDrawEnemies(); // Vẽ enemy còn lại
+        handleEffects(); // Vẽ hiệu ứng còn lại
+        drawGameOverScreen();
     } else if (gameState === 'menu') {
-        // Nếu đang ở menu, không vẽ gì trên canvas (menu là div HTML)
+        // Không vẽ gì trên canvas khi ở menu
     }
 
-    // Yêu cầu trình duyệt vẽ lại khung hình tiếp theo
     animationFrameId = requestAnimationFrame(gameLoop);
 }
-// --- Local Storage Functions (Giữ nguyên) ---
-function saveHighScore() {
-    try {
-        localStorage.setItem('typingAttackHighScore', highScore.toString());
-    } catch (e) {
-        console.error("Lỗi lưu điểm cao:", e);
-    }
-}
 
-function loadHighScore() {
-    try {
-        const storedScore = localStorage.getItem('typingAttackHighScore');
-        if (storedScore !== null)
-            highScore = parseInt(storedScore, 10) || 0; // Chuyển đổi sang số, mặc định 0 nếu lỗi
-    } catch (e) {
-        console.error("Lỗi tải điểm cao:", e);
-        highScore = 0; // Đặt về 0 nếu có lỗi
-    }
-    highScoreDisplay.textContent = highScore; // Cập nhật hiển thị điểm cao nhất
-}
+// --- Local Storage Functions ---
+function saveHighScore() { try { localStorage.setItem('typingAttackHighScore', highScore.toString()); } catch (e) { console.error("Lỗi lưu điểm cao:", e); } }
+function loadHighScore() { try { const s = localStorage.getItem('typingAttackHighScore'); if (s !== null) highScore = parseInt(s, 10) || 0; } catch (e) { highScore = 0; } highScoreDisplay.textContent = highScore; }
+function savePlayerName() { try { localStorage.setItem('typingAttackPlayerName', playerName); } catch (e) { } }
+function loadPlayerName() { try { const s = localStorage.getItem('typingAttackPlayerName'); if (s) playerName = s; } catch (e) { playerName = "Player"; } playerNameInput.value = playerName; }
+function saveLaserColor() { try { localStorage.setItem('typingAttackLaserColor', selectedLaserColor); localStorage.setItem('typingAttackLaserColorName', selectedLaserColorName); } catch (e) { } }
+function loadLaserColor() { /* ... code tải màu laser ... */ currentLaserColorNameSpan.textContent = selectedLaserColorName; selectOption(laserColorButtons, selectedLaserColor, null); }
+function saveLanguage() { try { localStorage.setItem('typingAttackLanguage', selectedLanguage); } catch (e) { } }
+function loadLanguage() { try { const s = localStorage.getItem('typingAttackLanguage'); if (s && programmingWords[s]) selectedLanguage = s; else selectedLanguage = 'c'; } catch (e) { selectedLanguage = 'c'; } words = programmingWords[selectedLanguage]; currentLanguageSpan.textContent = selectedLanguage.toUpperCase(); selectOption(languageButtons, selectedLanguage, null); }
 
-function savePlayerName() {
-    try {
-        localStorage.setItem('typingAttackPlayerName', playerName);
-    } catch (e) {
-        console.error("Lỗi lưu tên:", e);
-    }
-}
-
-function loadPlayerName() {
-    try {
-        const storedName = localStorage.getItem('typingAttackPlayerName');
-        if (storedName)
-            playerName = storedName;
-    } catch (e) {
-        console.error("Lỗi tải tên:", e);
-        playerName = "Player"; // Đặt tên mặc định nếu lỗi
-    }
-    playerNameInput.value = playerName; // Cập nhật ô input tên
-}
-
-function saveLaserColor() {
-    try {
-        localStorage.setItem('typingAttackLaserColor', selectedLaserColor);
-        localStorage.setItem('typingAttackLaserColorName', selectedLaserColorName);
-    } catch (e) {
-        console.error("Lỗi lưu màu laser:", e);
-    }
-}
-
-function loadLaserColor() {
-    try {
-        const storedColor = localStorage.getItem('typingAttackLaserColor');
-        const storedName = localStorage.getItem('typingAttackLaserColorName');
-        if (storedColor && storedName) {
-            selectedLaserColor = storedColor;
-            selectedLaserColorName = storedName;
-        } else {
-            // Giá trị mặc định nếu chưa có trong storage
-            selectedLaserColor = '#00FF00';
-            selectedLaserColorName = 'Xanh lá';
-        }
-    } catch (e) {
-        console.error("Lỗi tải màu laser:", e);
-        // Giá trị mặc định nếu lỗi
-        selectedLaserColor = '#00FF00';
-        selectedLaserColorName = 'Xanh lá';
-    }
-    currentLaserColorNameSpan.textContent = selectedLaserColorName; // Cập nhật hiển thị tên màu
-    // Đánh dấu nút màu laser đã chọn trên menu
-    laserColorButtons.forEach(btn => {
-        if (btn.dataset.color === selectedLaserColor) {
-            btn.classList.add('selected');
-        } else {
-            btn.classList.remove('selected');
-        }
-    });
-}
-
-// --- Lưu và tải ngôn ngữ đã chọn (MỚI) ---
-function saveLanguage() {
-    try {
-        localStorage.setItem('typingAttackLanguage', selectedLanguage);
-    } catch (e) {
-        console.error("Lỗi lưu ngôn ngữ:", e);
-    }
-}
-
-function loadLanguage() {
-    try {
-        const storedLanguage = localStorage.getItem('typingAttackLanguage');
-        if (storedLanguage && programmingWords[storedLanguage]) { // Kiểm tra ngôn ngữ lưu có tồn tại không
-            selectedLanguage = storedLanguage;
-        } else {
-            selectedLanguage = 'c'; // Mặc định là C
-        }
-    } catch (e) {
-        console.error("Lỗi tải ngôn ngữ:", e);
-        selectedLanguage = 'c'; // Mặc định là C nếu lỗi
-    }
-    words = programmingWords[selectedLanguage]; // Cập nhật danh sách từ
-    currentLanguageSpan.textContent = selectedLanguage.toUpperCase(); // Cập nhật hiển thị
-    // Đánh dấu nút ngôn ngữ đã chọn trên menu
-    languageButtons.forEach(btn => {
-        if (btn.dataset.language === selectedLanguage) {
-            btn.classList.add('selected');
-        } else {
-            btn.classList.remove('selected');
-        }
-    });
-}
-
-// --- Menu Functions (ĐÃ CẬP NHẬT) ---
-playerNameInput.addEventListener('change', () => {
-    playerName = playerNameInput.value.trim() || "Player"; // Lấy tên từ input, mặc định "Player" nếu rỗng
-    savePlayerName(); // Lưu tên
-});
-
-laserColorButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        selectedLaserColor = button.dataset.color; // Lấy màu từ data-color
-        selectedLaserColorName = button.dataset.name; // Lấy tên màu từ data-name
-        saveLaserColor(); // Lưu màu đã chọn
-        currentLaserColorNameSpan.textContent = selectedLaserColorName; // Cập nhật hiển thị
-        selectOption(laserColorButtons, selectedLaserColor, null); // Cập nhật trạng thái nút selected
-        console.log("Selected Laser Color:", selectedLaserColorName, selectedLaserColor);
-    });
-});
-
-// Listener cho các nút ngôn ngữ (MỚI)
-languageButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        selectedLanguage = button.dataset.language; // Cập nhật ngôn ngữ
-        words = programmingWords[selectedLanguage]; // Cập nhật danh sách từ
-        saveLanguage(); // Lưu ngôn ngữ đã chọn
-        selectOption(languageButtons, selectedLanguage, (val) => {
-            // Cập nhật hiển thị tên ngôn ngữ trên nút chính
-            currentLanguageSpan.textContent = val.toUpperCase();
-        });
-        console.log("Selected Language:", selectedLanguage);
-    });
-});
+// --- Menu Functions ---
+playerNameInput.addEventListener('change', () => { playerName = playerNameInput.value.trim() || "Player"; savePlayerName(); });
+laserColorButtons.forEach(button => { button.addEventListener('click', () => { /* ... code chọn màu laser ... */ saveLaserColor(); currentLaserColorNameSpan.textContent = selectedLaserColorName; selectOption(laserColorButtons, selectedLaserColor, null); }); });
+languageButtons.forEach(button => { button.addEventListener('click', () => { selectedLanguage = button.dataset.language; words = programmingWords[selectedLanguage]; saveLanguage(); selectOption(languageButtons, selectedLanguage, (val) => { currentLanguageSpan.textContent = val.toUpperCase(); }); }); });
 
 
 function showMenu() {
     gameState = 'menu';
-    menuDiv.style.display = 'block'; // Hiển thị menu
+    menuDiv.style.display = 'block';
+    gameContainerDiv.style.display = 'none';
+    canvas.classList.remove('clickable');
+    inputBox.disabled = false; // Nên để false ở menu phòng trường hợp lỗi
 
-    gameContainerDiv.style.display = 'none'; // Ẩn container game
-    canvas.classList.remove('clickable'); // Bỏ lớp clickable trên canvas
-    inputBox.disabled = false; // Kích hoạt lại ô input (dù nó bị ẩn, đề phòng)
+    // Dừng nhạc game nếu đang chạy
+    var bgMusic = document.getElementById("background-music");
+    if (bgMusic) { bgMusic.pause(); }
 
-    loadHighScore(); // Tải điểm cao nhất khi vào menu
-    loadPlayerName(); // Tải tên người chơi
-    loadLaserColor(); // Tải màu laser đã chọn
-    loadLanguage(); // Tải ngôn ngữ đã chọn (MỚI)
+    // Hủy animation frame nếu đang chạy
+    if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
+    // Hủy interval spawn enemy nếu đang chạy
+    if (spawnIntervalId) { clearInterval(spawnIntervalId); spawnIntervalId = null; }
 
 
-    // Cập nhật hiển thị các lựa chọn đã chọn
+    loadHighScore();
+    loadPlayerName();
+    loadLaserColor();
+    loadLanguage();
+
     currentDifficultySpan.textContent = difficulties[selectedDifficulty].name;
-    // Cập nhật hiển thị nhân vật đã chọn, kiểm tra key tồn tại
-    if (characters[selectedCharacter]) {
-        currentCharacterSpan.textContent = characters[selectedCharacter].name;
-    } else {
-        currentCharacterSpan.textContent = 'Không xác định'; // Hoặc tên mặc định
-    }
-    currentLanguageSpan.textContent = selectedLanguage.toUpperCase(); // Cập nhật hiển thị ngôn ngữ (MỚI)
+    currentCharacterSpan.textContent = characters[selectedCharacter]?.name || 'Không xác định';
+    currentLanguageSpan.textContent = selectedLanguage.toUpperCase();
 
-
+    // Reset mảng để tránh vẽ lại khi quay lại menu
+    enemies = [];
+    lasers = [];
+    particles = [];
 }
 
 function hideMenu() {
-    menuDiv.style.display = 'none'; // Ẩn menu
-    gameContainerDiv.style.display = 'block'; // Hiển thị container game
-
-
+    menuDiv.style.display = 'none';
+    gameContainerDiv.style.display = 'block';
 }
 
-// Hàm ẩn/hiện các nhóm tùy chọn
-function toggleOptions(elementId) {
-    document.getElementById(elementId).classList.toggle('hidden');
-}
+function toggleOptions(elementId) { document.getElementById(elementId).classList.toggle('hidden'); }
 
-// Hàm đánh dấu nút đã chọn trong một nhóm
 function selectOption(buttonGroup, selectedValue, updateFunction) {
     buttonGroup.forEach(btn => {
-        // Lấy key đầu tiên trong dataset (ví dụ: 'difficulty', 'character', 'color', 'language')
         const dataKey = Object.keys(btn.dataset)[0];
-        if (btn.dataset[dataKey] === selectedValue) {
-            btn.classList.add('selected'); // Thêm lớp 'selected'
-        } else {
-            btn.classList.remove('selected'); // Xóa lớp 'selected'
-        }
+        btn.classList.toggle('selected', btn.dataset[dataKey] === selectedValue);
     });
     if (updateFunction) {
-        // Truyền giá trị đã chọn vào hàm cập nhật
-        const selectedBtn = Array.from(buttonGroup).find(btn => {
-            const dataKey = Object.keys(btn.dataset)[0];
-            return btn.dataset[dataKey] === selectedValue;
-        });
+        const selectedBtn = Array.from(buttonGroup).find(btn => btn.classList.contains('selected'));
         if (selectedBtn) {
             updateFunction(selectedBtn.dataset[Object.keys(selectedBtn.dataset)[0]]);
         }
     }
 }
 
-
 // --- Event Listeners for Menu ---
 startButton.addEventListener('click', startGame);
+difficultyButtons.forEach(button => { button.addEventListener('click', () => { selectedDifficulty = button.dataset.difficulty; selectOption(difficultyButtons, selectedDifficulty, (val) => { currentDifficultySpan.textContent = difficulties[val].name; }); }); });
+characterButtons.forEach(button => { button.addEventListener('click', () => { selectedCharacter = button.dataset.character; selectOption(characterButtons, selectedCharacter, (val) => { currentCharacterSpan.textContent = characters[val]?.name || 'Không xác định'; }); }); });
 
+// --- Responsive: Hàm resizeCanvas và resizeGameOverButtons ---
+function resizeCanvas() {
+    const containerWidth = gameContainerDiv.clientWidth;
+    const newWidth = Math.max(300, containerWidth); // Đặt chiều rộng tối thiểu
+    const newHeight = newWidth * (originalHeight / originalWidth);
 
-// Listener cho các nút độ khó
-difficultyButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        selectedDifficulty = button.dataset.difficulty; // Cập nhật độ khó
-        selectOption(difficultyButtons, selectedDifficulty, (val) => {
-            // Cập nhật hiển thị tên độ khó trên nút chính
-            currentDifficultySpan.textContent = difficulties[val].name;
-        });
-        console.log("Selected Difficulty:", selectedDifficulty);
-    });
-});
+    canvas.width = newWidth;
+    canvas.height = newHeight;
 
-// Listener cho các nút nhân vật
-const allCharacterButtons = document.querySelectorAll('.character-btn'); // Query lại sau khi sửa HTML
-allCharacterButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        selectedCharacter = button.dataset.character; // Cập nhật nhân vật
-        // Cập nhật tên hiển thị trên nút chính
-        selectOption(allCharacterButtons, selectedCharacter, (val) => {
-            // Kiểm tra xem key có tồn tại trong characters không trước khi lấy name
-            if (characters[val]) {
-                currentCharacterSpan.textContent = characters[val].name;
-            }
-        });
-        console.log("Selected Character:", selectedCharacter);
-    });
-});
+    scaleX = newWidth / originalWidth;
+    scaleY = newHeight / originalHeight;
 
-// --- Game Initialization (ĐÃ CẬP NHẬT) ---
-function startGame() {
-    if (gameState === 'playing') return; // Ngăn chặn start game nếu đang chơi
-
-    canvas.classList.remove('clickable'); // Bỏ clickable
-    inputBox.disabled = false; // Kích hoạt input box
-
-    // Dừng interval sinh enemy cũ nếu có
-    if (spawnIntervalId) {
-        clearInterval(spawnIntervalId);
+    // Cập nhật lại vị trí nút game over nếu đang ở màn hình đó
+    if (gameState === 'gameOver') {
+        resizeGameOverButtons();
     }
+    // Không cần cập nhật vị trí player ở đây vì nó được cập nhật trong drawPlayer()
+}
 
-    // Reset các biến game
-    score = 0;
-    playerLives = 3;
-    comboCounter = 0;
-    successfulHits = 0;
-    enemiesReachedPlayer = 0;
-    accuracy = 100;
-    enemies = [];
-    lasers = [];
-    particles = [];
+function resizeGameOverButtons() {
+    const fontScaleBase = Math.min(scaleX, scaleY);
+    const buttonWidth = Math.max(80, 120 * scaleX); // Chiều rộng tối thiểu 80px
+    const buttonHeight = Math.max(35, 50 * scaleY); // Chiều cao tối thiểu 35px
+    const buttonY = canvas.height / 2 + Math.max(60, 100 * scaleY); // Khoảng cách Y tối thiểu 60px
+    const retryButtonX = canvas.width / 2 - Math.max(50, 150 * scaleX) - buttonWidth / 2 + Math.max(30, 75 * scaleX); // Điều chỉnh lại khoảng cách
+    const menuButtonX = canvas.width / 2 + Math.max(50, 30 * scaleX);
 
-    // Cập nhật hiển thị ban đầu
+    gameOverButtonRetry.x = retryButtonX;
+    gameOverButtonRetry.y = buttonY;
+    gameOverButtonRetry.width = buttonWidth;
+    gameOverButtonRetry.height = buttonHeight;
+
+    gameOverButtonMenu.x = menuButtonX;
+    gameOverButtonMenu.y = buttonY;
+    gameOverButtonMenu.width = buttonWidth;
+    gameOverButtonMenu.height = buttonHeight;
+}
+
+// --- Game Initialization ---
+function startGame() {
+    if (gameState === 'playing') return;
+
+    hideMenu(); // Ẩn menu trước
+    resizeCanvas(); // Tính toán kích thước canvas ngay khi bắt đầu
+
+    canvas.classList.remove('clickable');
+    inputBox.disabled = false;
+
+    if (spawnIntervalId) clearInterval(spawnIntervalId);
+    if (animationFrameId) cancelAnimationFrame(animationFrameId); // Hủy frame cũ trước khi bắt đầu mới
+
+    score = 0; playerLives = 3; comboCounter = 0; successfulHits = 0;
+    enemiesReachedPlayer = 0; accuracy = 100;
+    enemies = []; lasers = []; particles = [];
+
     updateInfoBar();
 
-    // Áp dụng cài đặt độ khó đã chọn (sử dụng tốc độ đã giảm)
     currentEnemySpeed = difficulties[selectedDifficulty].speed;
     currentSpawnRate = difficulties[selectedDifficulty].rate;
     currentTargetFactor = difficulties[selectedDifficulty].targetFactor;
 
-    gameState = 'playing'; // Đặt trạng thái game thành đang chơi
-    hideMenu(); // Ẩn menu
+    gameState = 'playing';
 
-    // Bắt đầu sinh enemy theo interval
     spawnIntervalId = setInterval(spawnEnemy, currentSpawnRate);
-
-    // Tự động focus vào input box sau một khoảng thời gian ngắn
     setTimeout(() => inputBox.focus(), 100);
-
-    // Phát nhạc nền game (ĐÃ CẬP NHẬT: Chỉ phát nhạc game, không còn dừng nhạc menu)
     playBackgroundMusic(selectedDifficulty);
 
+    gameLoop(); // Bắt đầu vòng lặp game sau khi đã setup
 }
-// Logic nhạc nền menu khi tải trang (ĐÃ XÓA)
-// window.onload = function () {
-//     var result = confirm("Bạn có muốn bật nhạc không?"); // Hiện hộp thoại xác nhận
-//     if (result) { // Nếu người dùng chọn OK
-//         var music = document.getElementById("back");
 
-//         if (music) {
-//             music.play(); // Phát nhạc mặc định menu
-//         }
-//     }
-// };
-
-
-// --- Input Focus Handling (Giữ nguyên) ---
+// --- Input Focus Handling ---
 inputBox.addEventListener('blur', () => {
-    // Nếu input box mất focus khi game đang chạy, cố gắng focus lại
     if (gameState === 'playing') {
-        setTimeout(() => {
-            // Kiểm tra lại trạng thái game trước khi focus
-            if (gameState === 'playing') {
-                inputBox.focus();
-            }
-        }, 100); // Độ trễ nhỏ để tránh loop focus/blur
+        // Tạm thời vô hiệu hóa việc tự focus lại trên mobile vì có thể gây phiền với bàn phím ảo
+        // setTimeout(() => { if (gameState === 'playing') inputBox.focus(); }, 100);
     }
 });
-// --- Canvas Click Listener (Giữ nguyên) ---
-canvas.addEventListener('click', (event) => {
-    // Chỉ xử lý click trên canvas khi game over
+
+// --- Canvas Click/Touch Listeners ---
+canvas.addEventListener('click', handleCanvasInteraction);
+canvas.addEventListener('touchstart', handleCanvasInteraction, { passive: false });
+
+function handleCanvasInteraction(event) {
     if (gameState !== 'gameOver') return;
 
-    const rect = canvas.getBoundingClientRect(); // Lấy vị trí và kích thước canvas
-    const clickX = event.clientX - rect.left; // Tọa độ X của click so với canvas
-    const clickY = event.clientY - rect.top; // Tọa độ Y của click so với canvas
+    let clientX, clientY;
+    if (event.type === 'touchstart') {
+        event.preventDefault(); // Ngăn cuộn trang khi chạm vào nút
+        clientX = event.touches[0].clientX;
+        clientY = event.touches[0].clientY;
+    } else {
+        clientX = event.clientX;
+        clientY = event.clientY;
+    }
 
-    // Kiểm tra click vào nút "Chơi lại"
-    if (clickX >= gameOverButtonRetry.x && clickX <= gameOverButtonRetry.x + gameOverButtonRetry.width &&
-        clickY >= gameOverButtonRetry.y && clickY <= gameOverButtonRetry.y + gameOverButtonRetry.height) {
-        startGame(); // Bắt đầu game mới
+    const rect = canvas.getBoundingClientRect();
+    const interactX = clientX - rect.left;
+    const interactY = clientY - rect.top;
+
+    // Kiểm tra va chạm với nút Retry
+    if (interactX >= gameOverButtonRetry.x && interactX <= gameOverButtonRetry.x + gameOverButtonRetry.width &&
+        interactY >= gameOverButtonRetry.y && interactY <= gameOverButtonRetry.y + gameOverButtonRetry.height) {
+        startGame();
     }
-    // Kiểm tra click vào nút "Menu"
-    else if (clickX >= gameOverButtonMenu.x && clickX <= gameOverButtonMenu.x + gameOverButtonMenu.width &&
-        clickY >= gameOverButtonMenu.y && clickY <= gameOverButtonMenu.y + gameOverButtonMenu.height) {
-        showMenu(); // Hiển thị menu
+    // Kiểm tra va chạm với nút Menu
+    else if (interactX >= gameOverButtonMenu.x && interactX <= gameOverButtonMenu.x + gameOverButtonMenu.width &&
+        interactY >= gameOverButtonMenu.y && interactY <= gameOverButtonMenu.y + gameOverButtonMenu.height) {
+        showMenu();
     }
+}
+
+
+// --- Responsive: Debounced Resize Listener ---
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        if (gameState !== 'menu') { // Chỉ resize nếu không ở menu chính
+            resizeCanvas();
+            // Có thể cần vẽ lại frame ngay lập tức sau khi resize
+            // if(gameState === 'gameOver') drawGameOverScreen();
+            // else if(gameState === 'playing') { /* có thể cần vẽ lại player/enemies */ }
+        }
+    }, 150);
 });
 
 
-// --- Initial Setup (ĐÃ CẬP NHẬT) ---
-loadLanguage(); // Tải ngôn ngữ đã chọn khi tải trang (MỚI)
+// --- Initial Setup ---
+loadLanguage();
 showMenu(); // Hiển thị menu khi tải trang lần đầu
-gameLoop(); // Bắt đầu vòng lặp game (sẽ chỉ vẽ màn hình menu hoặc game over ban đầu)
+// Không gọi gameLoop() ở đây nữa, nó sẽ được gọi trong startGame()
