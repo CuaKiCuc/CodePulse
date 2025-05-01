@@ -1,0 +1,195 @@
+﻿/* --- CSS giữ nguyên --- */
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: url('../images/anh-nen-vu-tru-003.jpg');
+    background-size: cover; /* Đảm bảo ảnh phủ hết */
+    background-position: center; /* Căn giữa ảnh */
+    background-repeat: no-repeat; /* Không lặp ảnh */
+    color: #fff;
+    font-family: Arial, sans-serif;
+    overflow: hidden; /* Ngăn cuộn body */
+    position: relative; /* Quan trọng cho việc định vị logo nền */
+}
+
+/* --- CSS cho logo nền (ĐÃ CẬP NHẬT) --- */
+.background-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Căn giữa hoàn hảo */
+    max-width: 80%; /* Điều chỉnh kích thước logo nền */
+    max-height: 80%;
+    opacity: 0.7; /* Độ trong suốt, điều chỉnh theo ý muốn */
+    z-index: -1; /* Đảm bảo logo nằm phía sau các nội dung khác */
+    pointer-events: none; /* Đảm bảo logo nền không chặn các sự kiện chuột */
+}
+
+#menu, #gameContainer {
+    text-align: center;
+    position: relative; /* Đảm bảo nội dung menu nằm trên logo nền */
+    z-index: 1;
+}
+
+#gameContainer {
+    display: none;
+}
+
+#gameCanvas {
+    border: 2px solid #fff;
+    background-image: url('../images/2.png');
+    background-size: cover; /* Đảm bảo ảnh phủ hết */
+    background-position: center; /* Căn giữa ảnh */
+    background-repeat: no-repeat; /* Không lặp ảnh */
+    cursor: default;
+}
+
+    #gameCanvas.clickable {
+        cursor: pointer;
+    }
+
+#infoBar {
+    font-size: 18px;
+    margin-bottom: 5px;
+    min-height: 25px;
+    display: flex;
+    justify-content: space-around;
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+    #infoBar span {
+        display: inline-block;
+        min-width: 100px;
+        text-align: center;
+    }
+
+    #infoBar .hearts {
+        color: red;
+        font-size: 20px;
+    }
+
+#inputBox {
+    font-size: 18px;
+    padding: 8px;
+    width: 250px;
+    margin-top: 10px;
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #fff;
+    border-radius: 5px;
+}
+
+#menu {
+    max-width: 400px;
+}
+
+    /* --- CSS cho logo trong menu (ĐÃ XÓA - chỉ còn logo nền) --- */
+    #menu h1 {
+        margin-bottom: 10px;
+        color:#ff0000;
+        font-size: 40px;
+    }
+
+    #menu p {
+        margin: 5px 0;
+        color: #fff;
+        font-size: 20px;
+    }
+
+    #menu input[type="text"] {
+        display: block;
+        margin: 5px auto;
+        padding: 8px 10px;
+        font-size: 16px;
+        width: 90%;
+        background-color: #333;
+        color: #fff;
+        border: 1px solid #fff;
+        border-radius: 5px;
+    }
+
+    #menu button {
+        display: block;
+        margin: 5px auto;
+        padding: 10px 20px;
+        font-size: 18px;
+        cursor: pointer;
+        background-color: #444;
+        color: #fff;
+        border: 1px solid #fff;
+        border-radius: 5px;
+        min-width: 250px;
+    }
+
+        #menu button:hover {
+            background-color: #666;
+        }
+
+/* --- CSS cho thanh cuộn trong options-container (ĐÃ CÓ & ĐÃ CẬP NHẬT) --- */
+.options-container {
+    border: 1px dashed #555;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    max-height: 150px; /* Chiều cao tối đa trước khi xuất hiện cuộn */
+    overflow-y: auto; /* Thêm thanh cuộn dọc khi nội dung vượt quá chiều cao */
+    /* Tùy chỉnh thanh cuộn (tùy chọn, chỉ hoạt động trên một số trình duyệt) */
+    scrollbar-width: thin; /* "auto" or "thin" */
+    scrollbar-color: #888 #555; /* thumb and track color */
+}
+    /* Tùy chỉnh thanh cuộn cho Webkit (Chrome, Safari) */
+    .options-container::-webkit-scrollbar {
+        width: 8px; /* chiều rộng của thanh cuộn */
+    }
+
+    .options-container::-webkit-scrollbar-track {
+        background: #555; /* màu nền của track */
+        border-radius: 4px;
+    }
+
+    .options-container::-webkit-scrollbar-thumb {
+        background-color: #888; /* màu của thumb */
+        border-radius: 4px;
+        border: 2px solid #555; /* padding xung quanh thumb */
+    }
+
+
+    .options-container button {
+        display: inline-block;
+        margin: 4px;
+        min-width: 70px;
+        padding: 6px 10px;
+        font-size: 14px;
+        border-width: 2px;
+        border-style: solid;
+        border-color: transparent;
+        color: #fff;
+        text-shadow: 1px 1px 2px black;
+    }
+
+        .options-container button.laser-color-btn {
+            border-color: #555; /* Viền mặc định cho màu laser */
+        }
+
+.hidden {
+    display: none;
+}
+
+.selected {
+    border-color: #fff !important;
+    box-shadow: 0 0 5px #fff;
+}
+
+.options-container button.selected:hover {
+    background-color: initial; /* Giữ nguyên màu nền khi hover nút đã chọn */
+}
+

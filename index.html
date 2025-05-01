@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="assets/images/logo.png" rel="shortcut icon" />
+    <title>CodePulse - Nhịp Đập Mã Lệnh</title>
+    <link href="assets/css/style.css" rel="stylesheet" />
+</head>
+<body>
+    <audio id="over">
+        <source src="assets/sound/game%20over/game-over-39-199830.mp3" type="audio/mpeg" />
+    </audio>
+    <audio id="click">
+        <source src="assets/sound/select%20menu/menu-click-89198.mp3" type="audio/mpeg" />
+    </audio>
+    <audio id="background-music" autoplay loop></audio>
+    <audio id="brake">
+        <source src="assets/sound/explosion/large-underwater-explosion-190270.mp3" type="audio/mpeg" />
+    </audio>
+    <audio id="shot">
+        <source src="assets/sound/gunshot/laser-gun-72558.mp3" type="audio/mpeg" />
+    </audio>
+
+    <img class="background-logo" src="assets/images/logo.png" alt="Game Logo" />
+
+    <div id="menu">
+        <h1>Code Pulse</h1>
+        <p>Điểm cao nhất: <span id="highScoreDisplay">0</span></p>
+        <input type="text" id="playerNameInput" placeholder="Nhập tên tàu của bạn...">
+        <button id="startButton">Bắt đầu</button>
+
+        <button onclick="toggleOptions('languageOptions')">Ngôn ngữ: <span id="currentLanguage">C</span></button>
+        <div id="languageOptions" class="options-container hidden">
+            <button data-language="c" class="language-btn selected">C</button>
+            <button data-language="csharp" class="language-btn">C#</button>
+            <button data-language="sql" class="language-btn">SQL</button>
+        </div>
+
+        <button onclick="toggleOptions('difficultyOptions')">Độ khó: <span id="currentDifficulty">Bình thường</span></button>
+        <div id="difficultyOptions" class="options-container hidden">
+            <button data-difficulty="easy" class="difficulty-btn">Dễ</button>
+            <button data-difficulty="normal" class="difficulty-btn selected">Bình thường</button>
+            <button data-difficulty="hard" class="difficulty-btn">Khó</button>
+        </div>
+        <button onclick="toggleOptions('characterOptions')">Nhân vật: <span id="currentCharacter">Tàu Chiến Binh</span></button>
+        <div id="characterOptions" class="options-container hidden">
+            <button data-character="default" class="character-btn selected">Tàu Chiến Binh</button>
+            <button data-character="ship2" class="character-btn">Tàu Vinh Quang</button>
+            <button data-character="ship3" class="character-btn">Tàu 30/4</button>
+        </div>
+        <button onclick="toggleOptions('laserColorOptions')">Màu Laser: <span id="currentLaserColorName">Xanh lá</span></button>
+        <div id="laserColorOptions" class="options-container hidden">
+            <button data-color="#00FF00" data-name="Xanh lá" class="laser-color-btn selected" style="background-color:#00FF00; color: black;">Xanh lá</button>
+            <button data-color="#0000FF" data-name="Xanh dương" class="laser-color-btn" style="background-color:#0000FF;">X.dương</button>
+            <button data-color="#FF0000" data-name="Đỏ" class="laser-color-btn" style="background-color:#FF0000;">Đỏ</button>
+            <button data-color="#FFFF00" data-name="Vàng" class="laser-color-btn" style="background-color:#FFFF00; color: black;">Vàng</button>
+            <button data-color="#800080" data-name="Tím" class="laser-color-btn" style="background-color:#800080;">Tím</button>
+            <button data-color="#00FFFF" data-name="Cyan" class="laser-color-btn" style="background-color:#00FFFF; color: black;">Cyan</button>
+            <button data-color="#FFFFFF" data-name="Trắng" class="laser-color-btn" style="background-color:#FFFFFF; color: black;">Trắng</button>
+        </div>
+    </div>
+
+    <div id="gameContainer">
+        <div id="infoBar">
+            <span id="scoreDisplay">Điểm : 0</span>
+            <span id="comboDisplay">Combo : 0</span>
+            <span id="accuracyDisplay">Chính xác : 100%</span>
+            <span id="livesDisplay"><span class="hearts">❤️❤️❤️</span></span>
+        </div>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <br>
+        <input type="text" id="inputBox" autocomplete="off">
+    </div>
+    <script src="assets/scripts/script.js"></script>
+</body>
+</html>
