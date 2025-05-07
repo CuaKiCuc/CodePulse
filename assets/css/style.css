@@ -4,45 +4,46 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Sử dụng min-height thay vì height */
+    min-height: 100vh;
     background-image: url('../images/anh-nen-vu-tru-003.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     color: #fff;
     font-family: Arial, sans-serif;
-    overflow-x: hidden; /* Ngăn cuộn ngang */
+    overflow-x: hidden;
     position: relative;
 }
 
 .background-logo {
     position: absolute;
-    top: 50%;
+    top: 110px;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 80%; /* Sử dụng width thay vì max-width để linh hoạt hơn */
-    height: auto; /* Để giữ tỉ lệ */
-    max-width: 500px; /* Giới hạn kích thước tối đa */
-    opacity: 0.7;
+    width: 15%;
+    height: auto;
+    max-width: 20%;
+    opacity: 1;
     z-index: -1;
     pointer-events: none;
+    border-radius: 50%;
 }
 
 #menu, #gameContainer {
     text-align: center;
-    position: relative;
+    position: relative; /* Quan trọng cho việc định vị các phần tử con */
     z-index: 1;
-    /* -- Responsive: Container chính -- */
-    width: 95%; /* Chiếm gần hết chiều rộng màn hình */
-    max-width: 800px; /* Giới hạn chiều rộng tối đa trên màn hình lớn */
+    width: 95%;
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
-    box-sizing: border-box; /* Đảm bảo padding/border không làm tăng kích thước */
-    padding: 10px; /* Thêm padding nhỏ */
+    box-sizing: border-box;
+    padding: 10px;
 }
 
 #gameContainer {
     display: none;
+    /* position: relative; đã có ở trên */
 }
 
 /* -- Responsive: Canvas -- */
@@ -53,12 +54,10 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     cursor: default;
-    /* -- CSS chỉ định kích thước hiển thị, JS sẽ xử lý độ phân giải vẽ -- */
-    display: block; /* Loại bỏ khoảng trắng thừa bên dưới */
-    width: 100%; /* Chiếm toàn bộ chiều rộng của #gameContainer */
-    height: auto; /* Chiều cao tự động theo tỉ lệ (JS sẽ đặt chính xác) */
-    /* aspect-ratio: 800 / 600; */ /* Thay thế nếu muốn */
-    max-width: 800px; /* Giữ nguyên kích thước tối đa nếu muốn */
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -69,38 +68,39 @@ body {
 
 /* -- Responsive: Thanh thông tin -- */
 #infoBar {
-    font-size: 16px; /* Điều chỉnh font size */
+    font-size: 16px;
     margin-bottom: 5px;
     min-height: 25px;
     display: flex;
-    /* justify-content: space-around; -- Chuyển sang space-between hoặc center khi wrap */
-    width: 100%; /* Chiếm hết chiều rộng container */
-    flex-wrap: wrap; /* Cho phép các mục xuống dòng */
-    justify-content: space-around; /* Phân bố đều */
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
     margin-left: auto;
     margin-right: auto;
+    /* Không cần position: relative và padding-right nữa vì nút Pause không còn ở đây */
 }
 
     #infoBar span {
         display: inline-block;
-        min-width: auto; /* Bỏ min-width cố định */
-        flex-basis: 45%; /* Mỗi mục chiếm khoảng 45% chiều rộng, ~2 mục/hàng */
+        min-width: auto;
+        flex-basis: 45%;
         text-align: center;
-        margin-bottom: 5px; /* Thêm khoảng cách khi xuống dòng */
-        padding: 2px 5px; /* Thêm padding nhỏ */
+        margin-bottom: 5px;
+        padding: 2px 5px;
     }
 
     #infoBar .hearts {
         color: red;
-        font-size: 1.2em; /* Sử dụng em cho font size tương đối */
+        font-size: 1.2em;
     }
 
 /* -- Responsive: Ô nhập liệu -- */
 #inputBox {
-    font-size: 16px; /* Điều chỉnh */
-    padding: 10px 12px; /* Tăng padding */
-    width: 80%; /* Rộng hơn trên mobile */
-    max-width: 300px; /* Giới hạn chiều rộng */
+    font-size: 16px;
+    padding: 10px 12px;
+    width: 80%;
+    max-width: 300px;
     margin-top: 10px;
     background-color: #333;
     color: #fff;
@@ -111,28 +111,28 @@ body {
 
 /* -- Responsive: Menu -- */
 #menu {
-    max-width: 500px; /* Có thể tăng max-width nếu muốn trên tablet */
+    max-width: 500px;
 }
 
     #menu h1 {
         margin-bottom: 10px;
         color: #ff0000;
-        font-size: 32px; /* Giảm kích thước tiêu đề */
+        font-size: 32px;
     }
 
     #menu p {
         margin: 5px 0;
         color: #fff;
-        font-size: 18px; /* Điều chỉnh */
+        font-size: 18px;
     }
 
     #menu input[type="text"] {
         display: block;
-        margin: 10px auto; /* Tăng margin */
-        padding: 10px 12px; /* Tăng padding */
-        font-size: 16px; /* Điều chỉnh */
-        width: 85%; /* Điều chỉnh */
-        max-width: 350px; /* Giới hạn */
+        margin: 10px auto;
+        padding: 10px 12px;
+        font-size: 16px;
+        width: 85%;
+        max-width: 350px;
         background-color: #333;
         color: #fff;
         border: 1px solid #fff;
@@ -142,17 +142,17 @@ body {
 
     #menu button {
         display: block;
-        margin: 8px auto; /* Điều chỉnh margin */
-        padding: 12px 15px; /* Tăng padding cho dễ bấm */
-        font-size: 16px; /* Điều chỉnh */
+        margin: 8px auto;
+        padding: 12px 15px;
+        font-size: 16px;
         cursor: pointer;
         background-color: #444;
         color: #fff;
         border: 1px solid #fff;
         border-radius: 5px;
-        min-width: auto; /* Bỏ min-width cố định */
-        width: 85%; /* Chiếm phần lớn chiều rộng */
-        max-width: 300px; /* Giới hạn */
+        min-width: auto;
+        width: 85%;
+        max-width: 300px;
         box-sizing: border-box;
     }
 
@@ -160,7 +160,7 @@ body {
             background-color: #666;
         }
 
-/* --- CSS cho thanh cuộn trong options-container --- */
+/* --- CSS cho thanh cuộn và hiệu ứng thu gọn trong options-container --- */
 .options-container {
     border: 1px dashed #555;
     padding: 10px;
@@ -174,7 +174,20 @@ body {
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #888 #555;
+    transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out, padding 0.3s ease-in-out, margin 0.3s ease-in-out, border-width 0.3s ease-in-out;
+    opacity: 1;
 }
+
+    .options-container.hidden {
+        max-height: 0 !important;
+        opacity: 0 !important;
+        overflow: hidden !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        border-width: 0 !important;
+    }
 
     .options-container::-webkit-scrollbar {
         width: 8px;
@@ -191,13 +204,12 @@ body {
         border: 2px solid #555;
     }
 
-
     .options-container button {
         display: inline-block;
         margin: 4px;
-        min-width: 60px; /* Điều chỉnh */
-        padding: 8px 12px; /* Tăng padding */
-        font-size: 13px; /* Điều chỉnh */
+        min-width: 60px;
+        padding: 8px 12px;
+        font-size: 13px;
         border-width: 2px;
         border-style: solid;
         border-color: transparent;
@@ -210,8 +222,8 @@ body {
             border-color: #555;
         }
 
-.hidden {
-    display: none;
+.hidden:not(.options-container) {
+    display: none !important;
 }
 
 .selected {
@@ -223,11 +235,119 @@ body {
     background-color: initial;
 }
 
+/* --- Styles for Pause Button (Positioned on Game Area) --- */
+#pauseButton {
+    background: #4776E6; /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #8E54E9, #4776E6); /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #8E54E9, #4776E6); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    padding: 8px 15px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 8px;
+    position: absolute; /* Định vị tuyệt đối so với #gameContainer */
+    top: 20px; /* Khoảng cách từ đỉnh của #gameContainer (hoặc canvas) */
+    right: 20px; /* Khoảng cách từ bên phải của #gameContainer (hoặc canvas) */
+    z-index: 500; /* Đảm bảo nó nổi trên canvas nhưng dưới pauseMenu */
+    line-height: 1;
+    transition: background-color 0.2s, transform 0.2s;
+}
 
-/* --- Media Query cho màn hình nhỏ hơn (ví dụ: điện thoại) --- */
+    #pauseButton:hover {
+        background-color: rgba(236, 151, 31, 0.9);
+        transform: scale(1.05);
+    }
+
+/* --- Styles for Pause Menu --- */
+#pauseMenu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+
+    #pauseMenu.hidden {
+        display: none;
+        opacity: 0;
+    }
+
+.pause-menu-content {
+    background-color: #1c1c1c;
+    padding: 35px 45px;
+    border-radius: 12px;
+    text-align: center;
+    color: #fff;
+    border: 2px solid #00bcd4;
+    box-shadow: 0 0 20px rgba(0, 188, 212, 0.5);
+    transform: scale(1);
+    transition: transform 0.3s ease-in-out;
+}
+
+#pauseMenu.hidden .pause-menu-content {
+    transform: scale(0.9);
+}
+
+.pause-menu-content h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 28px;
+    color: #ffeb3b;
+}
+
+.pause-menu-content button {
+    display: block;
+    width: 100%;
+    padding: 14px 22px;
+    margin: 12px auto;
+    max-width: 250px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 1px solid #fff;
+    background-color: #333;
+    color: #fff;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+    .pause-menu-content button:hover {
+        background-color: #555;
+        transform: translateY(-2px);
+    }
+
+#continueButton {
+    background-color: #4CAF50;
+    border-color: #388E3C;
+}
+
+    #continueButton:hover {
+        background-color: #5cb85c;
+    }
+
+#returnToMenuButton {
+    background-color: #f44336;
+    border-color: #D32F2F;
+}
+
+    #returnToMenuButton:hover {
+        background-color: #e57373;
+    }
+
+/* --- Media Query cho màn hình nhỏ hơn --- */
 @media (max-width: 600px) {
     .background-logo {
-        max-width: 300px; /* Giảm kích thước logo nền */
+        max-width: 150px;
+        top: 80px;
     }
 
     #menu h1 {
@@ -248,9 +368,16 @@ body {
     }
 
         #infoBar span {
-            flex-basis: 48%; /* Gần 50% để đảm bảo 2 cột */
+            flex-basis: 48%;
             padding: 2px 3px;
         }
+
+    #pauseButton { /* Điều chỉnh cho màn hình nhỏ */
+        font-size: 18px;
+        padding: 6px 12px;
+        top: 15px;
+        right: 15px;
+    }
 
     #inputBox {
         width: 90%;
@@ -263,15 +390,45 @@ body {
         font-size: 12px;
         padding: 6px 8px;
     }
+
+    .pause-menu-content {
+        padding: 25px 30px;
+        width: 85%;
+    }
+
+        .pause-menu-content h2 {
+            font-size: 24px;
+        }
+
+        .pause-menu-content button {
+            font-size: 16px;
+            padding: 12px 18px;
+            max-width: 220px;
+        }
 }
 
 @media (max-width: 400px) {
-    #infoBar span {
-        flex-basis: 100%; /* Mỗi mục một hàng trên màn hình rất nhỏ */
-        margin-bottom: 8px;
+    #infoBar {
+        justify-content: center;
     }
+
+        #infoBar span {
+            flex-basis: 100%;
+            margin-bottom: 8px;
+        }
 
     #menu h1 {
         font-size: 24px;
+    }
+
+    .pause-menu-content {
+        width: 90%;
+    }
+
+    #pauseButton {
+        top: 10px;
+        right: 10px;
+        padding: 5px 10px;
+        font-size: 16px;
     }
 }

@@ -20,9 +20,19 @@ const currentLanguageSpan = document.getElementById('currentLanguage');
 const currentDifficultySpan = document.getElementById('currentDifficulty');
 const currentCharacterSpan = document.getElementById('currentCharacter');
 const currentLaserColorNameSpan = document.getElementById('currentLaserColorName');
+// Lấy phần tử logo
+const backgroundLogo = document.querySelector('.background-logo');
+
+
+// --- NEW: Pause Menu Elements ---
+const pauseButton = document.getElementById('pauseButton');
+const pauseMenuDiv = document.getElementById('pauseMenu');
+const continueButton = document.getElementById('continueButton');
+const returnToMenuButton = document.getElementById('returnToMenuButton');
+
 
 // --- Game State & Variables ---
-let gameState = 'menu';
+let gameState = 'menu'; // Possible states: 'menu', 'playing', 'gameOver', 'paused'
 let score = 0;
 let finalScore = 0;
 let highScore = 0;
@@ -38,6 +48,8 @@ let lasers = [];
 let particles = [];
 let selectedLaserColor = '#00FF00';
 let selectedLaserColorName = 'Xanh lá';
+let gamePausedBySystem = false; // For handling window blur/focus
+
 
 // --- Responsive Scaling Variables ---
 let scaleX = 1; // Tỉ lệ scale theo chiều ngang
@@ -58,8 +70,8 @@ let words = programmingWords[selectedLanguage];
 // --- Cài đặt độ khó ---
 const difficulties = {
     easy: { speed: 0.5, rate: 2500, name: 'Dễ', targetFactor: 0.3 },
-    normal: { speed: 0.7, rate: 2000, name: 'Bình thường', targetFactor: 0.5 },
-    hard: { speed: 1, rate: 1500, name: 'Khó', targetFactor: 0.8 }
+    normal: { speed: 1, rate: 2000, name: 'Bình thường', targetFactor: 0.5 },
+    hard: { speed: 1.5, rate: 1500, name: 'Khó', targetFactor: 0.8 }
 };
 let selectedDifficulty = 'normal';
 let currentEnemySpeed = difficulties[selectedDifficulty].speed;
@@ -345,20 +357,20 @@ function updateInfoBar() {
 
 // --- Spawn Enemy ---
 function spawnEnemy() {
-    if (gameState === 'playing') {
-        let newEnemy = new Enemy();
-        // Đặt vị trí X ngẫu nhiên dựa trên chiều rộng canvas hiện tại và chiều rộng đã scale của enemy
-        const enemyDrawWidth = newEnemy.originalWidth * scaleX;
-        newEnemy.x = Math.random() * (canvas.width - enemyDrawWidth);
-        // Đặt vị trí Y ở trên cùng (chiều cao enemy đã scale)
-        newEnemy.y = -(newEnemy.originalHeight * scaleY);
-        enemies.push(newEnemy);
-    }
+    if (gameState !== 'playing') return; // Only spawn if actively playing
+
+    let newEnemy = new Enemy();
+    // Đặt vị trí X ngẫu nhiên dựa trên chiều rộng canvas hiện tại và chiều rộng đã scale của enemy
+    const enemyDrawWidth = newEnemy.originalWidth * scaleX;
+    newEnemy.x = Math.random() * (canvas.width - enemyDrawWidth);
+    // Đặt vị trí Y ở trên cùng (chiều cao enemy đã scale)
+    newEnemy.y = -(newEnemy.originalHeight * scaleY);
+    enemies.push(newEnemy);
 }
 
 // --- Input Handling ---
 inputBox.addEventListener('input', () => {
-    if (gameState !== 'playing') return;
+    if (gameState !== 'playing') return; // Only process input if actively playing
     const typedText = inputBox.value.trim().toLowerCase();
     if (!typedText) return;
 
@@ -435,6 +447,9 @@ function handleEffects() {
 
 // --- Game Loop Functions ---
 function updateAndDrawEnemies() {
+    // This function is called within gameLoop, which already checks gameState.
+    // If more granular control is needed, uncomment the line below.
+    // if (gameState !== 'playing') return;
     for (let i = enemies.length - 1; i >= 0; i--) {
         const isOutOfBounds = enemies[i].update(); // update đã xử lý out of bounds
         enemies[i].draw();
@@ -445,7 +460,9 @@ function updateAndDrawEnemies() {
     }
 }
 function checkGameOver() {
-    if (gameState !== 'playing') return;
+    // This function is called within gameLoop, which already checks gameState.
+    // If more granular control is needed, uncomment the line below.
+    // if (gameState !== 'playing') return;
 
     const playerDrawWidth = player.width * scaleX;
     const playerDrawHeight = player.height * scaleY;
@@ -508,20 +525,22 @@ function flashScreen(bgColor) {
         flashDiv.style.transition = 'opacity 0.3s ease-out';
         flashDiv.style.opacity = '0';
         // Xóa div sau khi hiệu ứng kết thúc
-        setTimeout(() => document.body.removeChild(flashDiv), 300); // Thời gian trùng với transition
+        setTimeout(() => { if (document.body.contains(flashDiv)) document.body.removeChild(flashDiv); }, 300); // Thời gian trùng với transition
     }, 50); // Độ trễ nhỏ trước khi bắt đầu mờ dần
 }
 
 function handleGameOver() {
-    if (gameState !== 'playing') return;
+    if (gameState !== 'playing' && gameState !== 'paused') return; // Allow game over from paused state (e.g. if last life lost then paused)
     gameState = 'gameOver';
     finalScore = score;
     if (finalScore > highScore) {
         highScore = finalScore;
         saveHighScore();
     }
-    clearInterval(spawnIntervalId);
+    if (spawnIntervalId) clearInterval(spawnIntervalId);
     spawnIntervalId = null;
+    // animationFrameId will be managed by gameLoop based on 'gameOver' state
+
     canvas.classList.add('clickable'); // Cho phép click/touch trên canvas
     inputBox.disabled = true;
     inputBox.value = '';
@@ -595,23 +614,38 @@ function drawGameOverScreen() {
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (gameState === 'playing') {
+    if (gameState === 'menu') {
+        // Menu is handled by HTML/CSS.
+        // If the loop is running in menu state, cancel it.
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+        return; // Explicitly stop further execution in menu state
+    } else if (gameState === 'playing') {
         drawPlayer();
         updateAndDrawEnemies();
         handleEffects();
         checkGameOver();
-    } else if (gameState === 'gameOver') {
-        // Vẫn vẽ trạng thái cuối cùng và màn hình game over
+    } else if (gameState === 'paused') {
+        // Draw the current state of the game but don't update logic
         drawPlayer();
-        updateAndDrawEnemies(); // Vẽ enemy còn lại
-        handleEffects(); // Vẽ hiệu ứng còn lại
+        for (let i = enemies.length - 1; i >= 0; i--) { enemies[i].draw(); }
+        handleEffects(); // Draw existing lasers/particles
+        // Pause menu is an HTML overlay
+    } else if (gameState === 'gameOver') {
+        drawPlayer();
+        for (let i = enemies.length - 1; i >= 0; i--) { enemies[i].draw(); }
+        handleEffects();
         drawGameOverScreen();
-    } else if (gameState === 'menu') {
-        // Không vẽ gì trên canvas khi ở menu
     }
 
-    animationFrameId = requestAnimationFrame(gameLoop);
+    // Continue animation if not in menu
+    if (gameState !== 'menu') {
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
 }
+
 
 // --- Local Storage Functions ---
 function saveHighScore() { try { localStorage.setItem('typingAttackHighScore', highScore.toString()); } catch (e) { console.error("Lỗi lưu điểm cao:", e); } }
@@ -627,24 +661,14 @@ function loadLaserColor() {
             selectedLaserColor = storedColor;
             selectedLaserColorName = storedName;
         } else {
-            // Giá trị mặc định nếu chưa có trong storage
-            selectedLaserColor = '#00FF00';
-            selectedLaserColorName = 'Xanh lá';
+            selectedLaserColor = '#00FF00'; selectedLaserColorName = 'Xanh lá';
         }
     } catch (e) {
-        console.error("Lỗi tải màu laser:", e);
-        // Giá trị mặc định nếu lỗi
-        selectedLaserColor = '#00FF00';
-        selectedLaserColorName = 'Xanh lá';
+        selectedLaserColor = '#00FF00'; selectedLaserColorName = 'Xanh lá';
     }
-    currentLaserColorNameSpan.textContent = selectedLaserColorName; // Cập nhật hiển thị tên màu
-    // Đánh dấu nút màu laser đã chọn trên menu
+    currentLaserColorNameSpan.textContent = selectedLaserColorName;
     laserColorButtons.forEach(btn => {
-        if (btn.dataset.color === selectedLaserColor) {
-            btn.classList.add('selected');
-        } else {
-            btn.classList.remove('selected');
-        }
+        btn.classList.toggle('selected', btn.dataset.color === selectedLaserColor);
     });
 }
 function saveLanguage() { try { localStorage.setItem('typingAttackLanguage', selectedLanguage); } catch (e) { } }
@@ -652,59 +676,93 @@ function loadLanguage() { try { const s = localStorage.getItem('typingAttackLang
 
 // --- Menu Functions ---
 playerNameInput.addEventListener('change', () => { playerName = playerNameInput.value.trim() || "Player"; savePlayerName(); });
-laserColorButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        selectedLaserColor = button.dataset.color; // Lấy màu từ data-color
-        selectedLaserColorName = button.dataset.name; // Lấy tên màu từ data-name
-        saveLaserColor(); // Lưu màu đã chọn
-        currentLaserColorNameSpan.textContent = selectedLaserColorName; // Cập nhật hiển thị
-        selectOption(laserColorButtons, selectedLaserColor, null); // Cập nhật trạng thái nút selected
-        console.log("Selected Laser Color:", selectedLaserColorName, selectedLaserColor);
-    });
-});
-languageButtons.forEach(button => { button.addEventListener('click', () => { selectedLanguage = button.dataset.language; words = programmingWords[selectedLanguage]; saveLanguage(); selectOption(languageButtons, selectedLanguage, (val) => { currentLanguageSpan.textContent = val.toUpperCase(); }); }); });
-
 
 function showMenu() {
     gameState = 'menu';
     menuDiv.style.display = 'block';
     gameContainerDiv.style.display = 'none';
+    pauseMenuDiv.classList.add('hidden');
     canvas.classList.remove('clickable');
-    inputBox.disabled = false; // Nên để false ở menu phòng trường hợp lỗi
+    inputBox.disabled = true;
 
-    // Dừng nhạc game nếu đang chạy
+    // Hiển thị logo khi về menu
+    if (backgroundLogo) {
+        backgroundLogo.style.display = 'block';
+    }
+
     var bgMusic = document.getElementById("background-music");
-    if (bgMusic) { bgMusic.pause(); }
+    if (bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; }
 
-    // Hủy animation frame nếu đang chạy
     if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
-    // Hủy interval spawn enemy nếu đang chạy
     if (spawnIntervalId) { clearInterval(spawnIntervalId); spawnIntervalId = null; }
-
 
     loadHighScore();
     loadPlayerName();
     loadLaserColor();
-    loadLanguage();
+    loadLanguage(); // This will call selectOption internally
 
+    // Update display texts for options
     currentDifficultySpan.textContent = difficulties[selectedDifficulty].name;
-    currentCharacterSpan.textContent = characters[selectedCharacter]?.name || 'Không xác định';
-    currentLanguageSpan.textContent = selectedLanguage.toUpperCase();
+    selectOption(difficultyButtons, selectedDifficulty, null); // Ensure correct button is visually selected
 
-    // Reset mảng để tránh vẽ lại khi quay lại menu
-    enemies = [];
-    lasers = [];
-    particles = [];
+    currentCharacterSpan.textContent = characters[selectedCharacter]?.name || 'Không xác định';
+    selectOption(characterButtons, selectedCharacter, null); // Ensure correct button is visually selected
+
+
+    // Close all option containers when showing menu
+    document.querySelectorAll('.options-container').forEach(container => {
+        if (!container.classList.contains('hidden')) {
+            container.style.maxHeight = "0px";
+            container.style.opacity = "0";
+            container.classList.add('hidden'); // Add hidden after ensuring it's visually collapsed
+        }
+    });
+
+
+    enemies = []; lasers = []; particles = [];
+    console.log("Switched to Menu state");
 }
 
 function hideMenu() {
     menuDiv.style.display = 'none';
     gameContainerDiv.style.display = 'block';
+
+    // Ẩn logo khi chuyển sang màn hình game
+    if (backgroundLogo) {
+        backgroundLogo.style.display = 'none';
+    }
 }
 
-function toggleOptions(elementId) { document.getElementById(elementId).classList.toggle('hidden'); }
+function toggleOptions(elementId) {
+    const optionsDiv = document.getElementById(elementId);
+    if (optionsDiv) {
+        const isCurrentlyHiddenOrCollapsing = optionsDiv.classList.contains('hidden') || optionsDiv.style.maxHeight === "0px";
 
-function selectOption(buttonGroup, selectedValue, updateFunction) {
+        if (isCurrentlyHiddenOrCollapsing) { // Needs to be shown
+            optionsDiv.classList.remove('hidden'); // Allow it to take space
+            // Force repaint/reflow before applying styles for transition
+            void optionsDiv.offsetWidth;
+            optionsDiv.style.maxHeight = optionsDiv.scrollHeight + "px";
+            optionsDiv.style.opacity = "1";
+        } else { // Needs to be hidden
+            optionsDiv.style.maxHeight = "0px";
+            optionsDiv.style.opacity = "0";
+            // Add .hidden class after transition for semantics and accessibility
+            optionsDiv.addEventListener('transitionend', function handler(event) {
+                // Ensure the event is for maxHeight or opacity to avoid premature hiding on other transitions
+                if (event.propertyName === 'max-height' || event.propertyName === 'opacity') {
+                    if (optionsDiv.style.maxHeight === '0px') { // Check if it was meant to be hidden
+                        optionsDiv.classList.add('hidden');
+                    }
+                    optionsDiv.removeEventListener('transitionend', handler);
+                }
+            }, { once: true }); // Use {once: true} for cleaner event removal
+        }
+    }
+}
+
+
+function selectOption(buttonGroup, selectedValue, updateFunction, optionsContainerIdToCollapse = null) {
     buttonGroup.forEach(btn => {
         const dataKey = Object.keys(btn.dataset)[0];
         btn.classList.toggle('selected', btn.dataset[dataKey] === selectedValue);
@@ -715,17 +773,62 @@ function selectOption(buttonGroup, selectedValue, updateFunction) {
             updateFunction(selectedBtn.dataset[Object.keys(selectedBtn.dataset)[0]]);
         }
     }
+    if (optionsContainerIdToCollapse) {
+        const container = document.getElementById(optionsContainerIdToCollapse);
+        if (container && !container.classList.contains('hidden') && container.style.maxHeight !== '0px') {
+            toggleOptions(optionsContainerIdToCollapse);
+        }
+    }
 }
 
-// --- Event Listeners for Menu ---
+// --- Event Listeners for Menu Options (modified for auto-collapse) ---
 startButton.addEventListener('click', startGame);
-difficultyButtons.forEach(button => { button.addEventListener('click', () => { selectedDifficulty = button.dataset.difficulty; selectOption(difficultyButtons, selectedDifficulty, (val) => { currentDifficultySpan.textContent = difficulties[val].name; }); }); });
-characterButtons.forEach(button => { button.addEventListener('click', () => { selectedCharacter = button.dataset.character; selectOption(characterButtons, selectedCharacter, (val) => { currentCharacterSpan.textContent = characters[val]?.name || 'Không xác định'; }); }); });
+
+difficultyButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        selectedDifficulty = button.dataset.difficulty;
+        selectOption(difficultyButtons, selectedDifficulty, (val) => {
+            currentDifficultySpan.textContent = difficulties[val].name;
+        }, 'difficultyOptions');
+    });
+});
+
+characterButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        selectedCharacter = button.dataset.character;
+        selectOption(characterButtons, selectedCharacter, (val) => {
+            currentCharacterSpan.textContent = characters[val]?.name || 'Không xác định';
+        }, 'characterOptions');
+    });
+});
+
+laserColorButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        selectedLaserColor = button.dataset.color;
+        selectedLaserColorName = button.dataset.name;
+        saveLaserColor();
+        currentLaserColorNameSpan.textContent = selectedLaserColorName;
+        selectOption(laserColorButtons, selectedLaserColor, null, 'laserColorOptions');
+    });
+});
+
+languageButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        selectedLanguage = button.dataset.language;
+        words = programmingWords[selectedLanguage];
+        saveLanguage(); // Saves the language
+        // Update the display text and then collapse.
+        selectOption(languageButtons, selectedLanguage, (val) => {
+            currentLanguageSpan.textContent = val.toUpperCase();
+        }, 'languageOptions');
+    });
+});
+
 
 // --- Responsive: Hàm resizeCanvas và resizeGameOverButtons ---
 function resizeCanvas() {
     const containerWidth = gameContainerDiv.clientWidth;
-    const newWidth = Math.max(300, containerWidth); // Đặt chiều rộng tối thiểu
+    const newWidth = Math.max(300, containerWidth);
     const newHeight = newWidth * (originalHeight / originalWidth);
 
     canvas.width = newWidth;
@@ -734,19 +837,17 @@ function resizeCanvas() {
     scaleX = newWidth / originalWidth;
     scaleY = newHeight / originalHeight;
 
-    // Cập nhật lại vị trí nút game over nếu đang ở màn hình đó
     if (gameState === 'gameOver') {
         resizeGameOverButtons();
     }
-    // Không cần cập nhật vị trí player ở đây vì nó được cập nhật trong drawPlayer()
 }
 
 function resizeGameOverButtons() {
     const fontScaleBase = Math.min(scaleX, scaleY);
-    const buttonWidth = Math.max(80, 120 * scaleX); // Chiều rộng tối thiểu 80px
-    const buttonHeight = Math.max(35, 50 * scaleY); // Chiều cao tối thiểu 35px
-    const buttonY = canvas.height / 2 + Math.max(60, 100 * scaleY); // Khoảng cách Y tối thiểu 60px
-    const retryButtonX = canvas.width / 2 - Math.max(50, 150 * scaleX) - buttonWidth / 2 + Math.max(30, 75 * scaleX); // Điều chỉnh lại khoảng cách
+    const buttonWidth = Math.max(80, 120 * scaleX);
+    const buttonHeight = Math.max(35, 50 * scaleY);
+    const buttonY = canvas.height / 2 + Math.max(60, 100 * scaleY);
+    const retryButtonX = canvas.width / 2 - Math.max(50, 150 * scaleX) - buttonWidth / 2 + Math.max(30, 75 * scaleX);
     const menuButtonX = canvas.width / 2 + Math.max(50, 30 * scaleX);
 
     gameOverButtonRetry.x = retryButtonX;
@@ -760,20 +861,84 @@ function resizeGameOverButtons() {
     gameOverButtonMenu.height = buttonHeight;
 }
 
+// --- Pause Game Functionality ---
+function showPauseMenu() {
+    if (gameState !== 'playing') return;
+
+    gameState = 'paused';
+    pauseMenuDiv.classList.remove('hidden');
+    inputBox.disabled = true;
+
+    if (spawnIntervalId) clearInterval(spawnIntervalId);
+    spawnIntervalId = null;
+    // animationFrameId is handled by gameLoop checking gameState
+
+    // Optional: Pause music
+    // var bgMusic = document.getElementById("background-music");
+    // if (bgMusic && !bgMusic.paused) { bgMusic.pause(); }
+    console.log("Game Paused");
+}
+
+function hidePauseMenu() {
+    pauseMenuDiv.classList.add('hidden');
+    if (gameState === 'playing' || (gameState === 'paused' && !gamePausedBySystem)) { // Only re-enable if it should be active
+        inputBox.disabled = false;
+    }
+}
+
+function resumeGame() {
+    if (gameState !== 'paused') return;
+
+    gameState = 'playing';
+    hidePauseMenu();
+    gamePausedBySystem = false; // Reset system pause flag
+
+    if (!spawnIntervalId) {
+        spawnIntervalId = setInterval(spawnEnemy, currentSpawnRate);
+    }
+    if (!animationFrameId) { // Restart game loop if it was stopped
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
+    setTimeout(() => { if (inputBox) inputBox.focus(); }, 100);
+
+    // Optional: Resume music
+    // var bgMusic = document.getElementById("background-music");
+    // if (bgMusic && bgMusic.paused) { bgMusic.play().catch(e => {}); }
+    console.log("Game Resumed");
+}
+
+// --- Event Listeners for Pause Functionality ---
+if (pauseButton) {
+    pauseButton.addEventListener('click', () => {
+        if (gameState === 'playing') {
+            showPauseMenu();
+        } else if (gameState === 'paused') {
+            resumeGame();
+        }
+    });
+}
+if (continueButton) continueButton.addEventListener('click', resumeGame);
+if (returnToMenuButton) {
+    returnToMenuButton.addEventListener('click', () => {
+        hidePauseMenu();
+        showMenu();
+    });
+}
+
+
 // --- Game Initialization ---
 function startGame() {
-    if (gameState === 'playing') return;
-
-    hideMenu(); // Ẩn menu trước
-    resizeCanvas(); // Tính toán kích thước canvas ngay khi bắt đầu
+    hideMenu();
+    pauseMenuDiv.classList.add('hidden');
+    resizeCanvas();
 
     canvas.classList.remove('clickable');
     inputBox.disabled = false;
 
-    if (spawnIntervalId) clearInterval(spawnIntervalId);
-    if (animationFrameId) cancelAnimationFrame(animationFrameId); // Hủy frame cũ trước khi bắt đầu mới
+    if (spawnIntervalId) { clearInterval(spawnIntervalId); spawnIntervalId = null; }
+    if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
 
-    score = 0; playerLives = 3; comboCounter = 0; successfulHits = 0;
+    score = 0; playerLives = maxLives; comboCounter = 0; successfulHits = 0;
     enemiesReachedPlayer = 0; accuracy = 100;
     enemies = []; lasers = []; particles = [];
 
@@ -786,30 +951,53 @@ function startGame() {
     gameState = 'playing';
 
     spawnIntervalId = setInterval(spawnEnemy, currentSpawnRate);
-    setTimeout(() => inputBox.focus(), 100);
+    setTimeout(() => { if (inputBox) inputBox.focus(); }, 100);
     playBackgroundMusic(selectedDifficulty);
 
-    gameLoop(); // Bắt đầu vòng lặp game sau khi đã setup
+    if (!animationFrameId) {
+        console.log("Starting gameLoop from startGame");
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
+    console.log("Game Started with difficulty:", selectedDifficulty);
 }
 
-// --- Input Focus Handling ---
+// --- Input Focus Handling & Window Blur/Focus ---
 inputBox.addEventListener('blur', () => {
-    if (gameState === 'playing') {
-        // Tạm thời vô hiệu hóa việc tự focus lại trên mobile vì có thể gây phiền với bàn phím ảo
+    if (gameState === 'playing' && !gamePausedBySystem && !document.activeElement === inputBox) {
+        // Consider if auto-focus is desired, especially on mobile
         // setTimeout(() => { if (gameState === 'playing') inputBox.focus(); }, 100);
     }
 });
 
-// --- Canvas Click/Touch Listeners ---
+window.addEventListener('blur', () => {
+    if (gameState === 'playing') {
+        gamePausedBySystem = true;
+        showPauseMenu();
+        console.log("Game auto-paused due to window blur");
+    }
+});
+
+window.addEventListener('focus', () => {
+    if (gameState === 'paused' && gamePausedBySystem) {
+        // User must click "Continue" to resume.
+        // If auto-resume is desired:
+        // resumeGame();
+        // But ensure inputBox is focused after resume if auto-resuming.
+        console.log("Game window focused, user can resume from pause menu.");
+    }
+});
+
+
+// --- Canvas Click/Touch Listeners for Game Over ---
 canvas.addEventListener('click', handleCanvasInteraction);
 canvas.addEventListener('touchstart', handleCanvasInteraction, { passive: false });
 
 function handleCanvasInteraction(event) {
-    if (gameState !== 'gameOver') return;
+    if (gameState !== 'gameOver') return; // Only for game over screen
 
     let clientX, clientY;
     if (event.type === 'touchstart') {
-        event.preventDefault(); // Ngăn cuộn trang khi chạm vào nút
+        event.preventDefault();
         clientX = event.touches[0].clientX;
         clientY = event.touches[0].clientY;
     } else {
@@ -821,12 +1009,10 @@ function handleCanvasInteraction(event) {
     const interactX = clientX - rect.left;
     const interactY = clientY - rect.top;
 
-    // Kiểm tra va chạm với nút Retry
     if (interactX >= gameOverButtonRetry.x && interactX <= gameOverButtonRetry.x + gameOverButtonRetry.width &&
         interactY >= gameOverButtonRetry.y && interactY <= gameOverButtonRetry.y + gameOverButtonRetry.height) {
         startGame();
     }
-    // Kiểm tra va chạm với nút Menu
     else if (interactX >= gameOverButtonMenu.x && interactX <= gameOverButtonMenu.x + gameOverButtonMenu.width &&
         interactY >= gameOverButtonMenu.y && interactY <= gameOverButtonMenu.y + gameOverButtonMenu.height) {
         showMenu();
@@ -839,11 +1025,8 @@ let resizeTimeout;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
-        if (gameState !== 'menu') { // Chỉ resize nếu không ở menu chính
+        if (gameState !== 'menu') {
             resizeCanvas();
-            // Có thể cần vẽ lại frame ngay lập tức sau khi resize
-            // if(gameState === 'gameOver') drawGameOverScreen();
-            // else if(gameState === 'playing') { /* có thể cần vẽ lại player/enemies */ }
         }
     }, 150);
 });
@@ -851,5 +1034,5 @@ window.addEventListener('resize', () => {
 
 // --- Initial Setup ---
 loadLanguage();
-showMenu(); // Hiển thị menu khi tải trang lần đầu
-// Không gọi gameLoop() ở đây nữa, nó sẽ được gọi trong startGame()
+showMenu(); // Gọi showMenu lần đầu để hiển thị menu và logo
+// gameLoop() is initiated by startGame()
